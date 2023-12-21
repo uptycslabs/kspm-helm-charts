@@ -18,14 +18,14 @@ Helm charts for Kubequery along with Kubernetes resources required for it to fun
 
 1. Download the `values.yaml` files for k8sosquery & kubequery from Uptycs UI. Users will be able to download these files as a tarball(.tar.gz) package.
 
-> NOTE: Tweak the appropriate fields in downloaded value files to enable or disable different features such as Uptycs Protect, Admission Controllers, and Detections on Audit Logs.
+> Note: Tweak the appropriate fields in downloaded value files to enable or disable different features such as Uptycs Protect, Admission Controllers, and Detections on Audit Logs.
 
 2. Add the Helm chart repository:
 ```bash
 $ helm repo add kspm-helm-charts https://hdsingh-uptycs.github.io/kspm-helm-charts
 ```
 
-> NOTE: If you've already added the helm repo, perform an update by running `helm repo update` to make sure you have the latest charts. You can then run `helm search repo kspm-helm-charts` to see the charts.
+> Note: If you've already added the helm repo, perform an update by running `helm repo update` to make sure you have the latest charts. You can then run `helm search repo kspm-helm-charts` to see the charts.
 
 3. Perform Helm installation of k8sosquery & kubequery:
 ```bash

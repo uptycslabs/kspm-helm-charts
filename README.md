@@ -1,5 +1,3 @@
-<!-- [![Lint Charts](https://github.com/hdsingh-uptycs/kspm-helm-charts/actions/workflows/lint-charts.yml/badge.svg?branch=main)](https://github.com/hdsingh-uptycs/kspm-helm-charts/actions/workflows/lint-charts.yml) -->
- 
 # Uptycs Kubernetes Helm Charts
 
 Helm charts repository for Uptycs K8sosquery & Kubequery.

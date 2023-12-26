@@ -41,7 +41,7 @@ helm search repo kspm-helm-charts
 helm install k8sosquery -f <path_to_downloaded_k8sosquery_values_file> kspm-helm-charts/k8sosquery
 ```
 ```console
-helm install kubequery -f <path_to_downloaded_kubequery_values_file> kspm-helm-charts/kubequery --set deployment.spec.hostname=<cluster_name_in_uptycs_ui>
+helm install kubequery --set deployment.spec.hostname=<cluster_name_in_uptycs_ui> -f <path_to_downloaded_kubequery_values_file> kspm-helm-charts/kubequery
 ```
 
 4. Verify installation of K8sosquery & Kubequery:

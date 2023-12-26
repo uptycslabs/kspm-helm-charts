@@ -320,8 +320,3 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
-
-# Test service used for helm test.
-test:
-  service:
-    port: 8080

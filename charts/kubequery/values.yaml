@@ -113,8 +113,3 @@ secrets:
   enroll_secret: __UPTYCS_ENROLL_SECRET__
   nginx_secret: |-
     __UPTYCS_NGINX_CRT__
-
-# Test service used for helm test.
-test:
-  service:
-    port: 8080

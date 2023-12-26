@@ -1,0 +1,5 @@
+{{ .Chart.Name }} has been installed successfully with the following configuration:
+1. Uptycs Protect: {{- if .Values.uptycsProtectDisabled eq true }} Disabled {{- else }} Enabled {{- end }}
+2. Image Admission Controller: {{- .Values.admissionControllerParameters.disable_image_admission_controller eq true }} Disabled {{- else}} Enabled {{- end }}
+3. Gatekeeper Admission Controller: {{- .Values.admissionControllerParameters.disable_gatekeeper_controller eq true }} Disabled {{- else}} Enabled {{- end }}
+4. Default Gatekeeper Pod Security Policies: {{- .Values.admissionControllerParameters.disable_gatekeeper_controller_psp eq true }} Not Installed {{- else}} Installed {{- end }}

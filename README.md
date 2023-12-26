@@ -5,10 +5,8 @@ Helm charts repository for Uptycs K8sosquery & Kubequery.
 ## Charts
 
 ### [K8sosquery](https://github.com/uptycslabs/kspm-helm-charts/tree/main/charts/k8sosquery)
-### K8sosquery
 Helm charts for K8sosquery and Kubernetes resources required for it to function well in a cluster.
 ### [Kubequery](https://github.com/uptycslabs/kspm-helm-charts/tree/main/charts/kubequery)
-### Kubequery
 Helm charts for Kubequery and Kubernetes resources required for it to function well in a cluster.
 
 ## Usage

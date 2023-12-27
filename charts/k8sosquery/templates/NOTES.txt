@@ -1,6 +1,8 @@
-{{ .Chart.Name}} has been successfully installed!
+Chart {{ .Chart.Name }} has been installed successfully with the following configuration:
 
-1. Get the application URL by running these commands:
+Uptycs Protect: {{- if contains "Uptycs-Protect" .Values.daemonset.containers.image_name }} Enabled {{- else }} Disabled {{- end }}
+
+Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
 {{- range $host := .Values.ingress.hosts }}
   {{- range .paths }}

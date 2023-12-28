@@ -1,0 +1,7 @@
+Chart {{ .Chart.Name }} has been installed successfully with the following configuration:
+
+Uptycs Protect: {{- if .Values.uptycsProtectDisabled }} Disabled {{- else }} Enabled {{- end }}
+Image Admission Controller: {{- if .Values.admissionControllerParameters.disable_image_admission_controller }} Disabled {{- else }} Enabled {{- end }}
+Gatekeeper Admission Controller: {{- if .Values.admissionControllerParameters.disable_gatekeeper_controller }} Disabled {{- else }} Enabled {{- end }}
+Default Gatekeeper Pod Security Policies: {{- if .Values.admissionControllerParameters.disable_gatekeeper_controller_psp }} Not Installed {{- else }} Installed {{- end }}
+Detections on Audit Logs for {{ .Values.cloudProvider }} platform: {{- if and (.Values.auditLogDetections.aks.disable_audit) (.Values.auditLogDetections.eks.disable_audit) (.Values.auditLogDetections.gke.disable_audit) (.Values.auditLogDetections.unmanaged_cluster.disable_audit) }} Disabled {{- else }} Enabled {{- end }}

@@ -1,0 +1,29 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubequery-cluster-role
+rules:
+- apiGroups: ["", "admissionregistration.k8s.io", "apps", "autoscaling", "batch", "events.k8s.io", "networking.k8s.io", "policy", "rbac.authorization.k8s.io", "storage.k8s.io", "apiextensions.k8s.io", "templates.gatekeeper.sh", "constraints.gatekeeper.sh"]
+  resources: ["*"]
+  verbs: ["get", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["create", "update", "patch"]
+- apiGroups: ["templates.gatekeeper.sh"]
+  resources: ["constrainttemplates"]
+  verbs: ["create", "patch", "update", "watch"]
+- apiGroups: ["constraints.gatekeeper.sh"]
+  resources: ["*"]
+  verbs: ["create", "patch", "update", "watch"]
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["list"]
+- apiGroups: ["security.events.uptycs.io"]
+  resources: ["rules"]
+  verbs: ["create", "update", "patch", "watch"]
+- apiGroups: ["compliance.uptycs.io"]
+  resources: ["compliancerules"]
+  verbs: ["create", "update", "patch", "watch"]

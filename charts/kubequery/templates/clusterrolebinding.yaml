@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-sa-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubequery-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: kubequery-sa
+    {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
+    namespace: {{ .Values.openshift.namespace.name }}
+    {{- else }}
+    namespace: {{ .Values.namespace.name }}
+    {{- end }}

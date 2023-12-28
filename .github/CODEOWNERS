@@ -1,0 +1,13 @@
+* @gdandu-uptycs @rtammana-uptycs @nhande-uptycs @hdsingh-uptycs @abhinavm-uptycs
+
+# BEGIN ANSIBLE MANAGED BLOCK
+###############################
+# Do not modify below this line
+###############################
+/.github/ @Uptycs/uptycs-github-policy-reviewers
+.gitignore @Uptycs/uptycs-github-policy-reviewers @Uptycs/build-config-codeowners
+Jenkinsfile* @Uptycs/build-config-codeowners
+Dockerfile* @Uptycs/build-config-codeowners
+Makefile* @Uptycs/build-config-codeowners
+make*.sh @Uptycs/build-config-codeowners
+# END ANSIBLE MANAGED BLOCK

@@ -1,3 +1,5 @@
+[![Lint Charts](https://github.com/uptycslabs/kspm-helm-charts/actions/workflows/lint-charts.yml/badge.svg?branch=main)](https://github.com/uptycslabs/kspm-helm-charts/actions/workflows/lint-charts.yml)
+
 # Uptycs Kubernetes Helm Charts
 
 Helm charts repository for Uptycs K8sosquery & Kubequery.
@@ -12,12 +14,7 @@ Helm charts for Kubequery and Kubernetes resources required for it to function w
 ## Usage
 [Helm](https://helm.sh) must be installed to use the charts. Please refer to Helm's [documentation](https://helm.sh/docs) to get started.
 
-1. Download `values.yaml` files for K8sosquery & Kubequery from Uptycs UI. Downloaded file will be a tarball(.tar.gz) package.
-
-> [!TIP]
-> Tweak the appropriate fields in downloaded value files to enable or disable different features such as Uptycs Protect, Admission Controllers, and Detections on Audit Logs.
-
-2. Add the Helm chart repository:
+1. Add the Helm chart repository:
 ```console
 helm repo add kspm-helm-charts https://uptycslabs.github.io/kspm-helm-charts
 ```
@@ -33,6 +30,11 @@ helm repo update
 ```console
 helm search repo kspm-helm-charts
 ```
+
+2. Download `values.yaml` files for K8sosquery & Kubequery from Uptycs UI. Downloaded file will be a tarball(.tar.gz) package.
+
+> [!TIP]
+> Tweak the appropriate fields in downloaded value files to enable or disable different features such as Uptycs Protect, Admission Controllers, and Detections on Audit Logs.
 
 3. Perform Helm installation of K8sosquery & Kubequery:
 ```console

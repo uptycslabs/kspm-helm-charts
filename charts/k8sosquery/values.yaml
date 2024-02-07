@@ -68,11 +68,14 @@ daemonset:
       secretName: nginx-secret
       optional: false
 
-# Configmap contains osquery flags which define k8sosquery's configuration in the cluster.
+# Configmap contains osquery flags & tags which define k8sosquery's configuration in the cluster.
 # NOTE: Please consult the Uptycs customer support before changing these configuration parameters.
 configmap:
   name: uptycs-config
   data:
+  # K8sosquery tags are optional & hence empty by default but example usage is:
+  # osquery_tags: key1/value1,key2/value2,key3/value3
+    osquery_tags: key1/value1,key2/value2,key3/value3
     osquery: |
       --add_container_image_to_events=false
       --additional_enroll_sql=

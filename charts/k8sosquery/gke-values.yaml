@@ -82,7 +82,7 @@ daemonset:
 configmap:
   name: uptycs-config
   data:
-  # K8sosquery tags are optional & hence empty by default but example usage is:
+  # osquery tags are optional & hence empty by default but example usage is:
   # osquery_tags: key1/value1,key2/value2,key3/value3
     osquery_tags:
     osquery: |

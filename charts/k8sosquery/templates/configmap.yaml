@@ -10,9 +10,9 @@ metadata:
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
 data:
-{{- if .Values.configmap.data.osquery_tags }}
+{{- if .Values.configmap.data.tags }}
   osquery.tags: |
-{{ .Values.configmap.data.osquery_tags | trim | indent 4 }}
+{{ .Values.configmap.data.tags | trim | indent 4 }}
 {{- end }}
   osquery.flags: |
 {{ .Values.configmap.data.osquery | indent 4 }}

@@ -82,6 +82,9 @@ daemonset:
 configmap:
   name: uptycs-config
   data:
+  # osquery tags are optional & hence empty by default but example usage is:
+  # tags: key1/value1,key2/value2,key3/value3
+    tags:
     osquery: |
       --add_container_image_to_events=false
       --additional_enroll_sql=

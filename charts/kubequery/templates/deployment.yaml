@@ -40,6 +40,16 @@ spec:
           name: uptycs-kubequery
           image: {{ .Values.deployment.spec.containers.image_name }}
           imagePullPolicy: {{ .Values.deployment.spec.containers.pullPolicy }}
+          {{- if .Values.deployment.spec.containers.livenessProbe }}
+          livenessProbe:
+            exec:
+              command:
+              {{- range $k, $v := .Values.deployment.spec.containers.livenessProbe.exec.command }}
+              - {{ $v }}
+              {{- end }}
+            initialDelaySeconds: {{ .Values.deployment.spec.containers.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.deployment.spec.containers.livenessProbe.periodSeconds }}
+          {{- end }}
           ports:
             - containerPort: 8443
               name: webhook-api

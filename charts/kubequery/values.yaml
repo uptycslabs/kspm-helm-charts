@@ -17,6 +17,8 @@ deployment:
     containers:
       image_name: uptycs/uptycs-kubequery:_UPTYCS_IMAGE_VERSION_
       pullPolicy: IfNotPresent
+      # To enable Liveness Probe for Kubequery please follow the instructions from the following url:
+      # https://{DOMAIN}{DOMAIN_SUFFIX}/help/docs/knowledge-base/configuration/liveness-probe-k8sosquey-kubequery
       resources:
         limits:
           cpu: 1000m

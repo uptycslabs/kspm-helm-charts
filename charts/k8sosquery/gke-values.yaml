@@ -23,6 +23,8 @@ daemonset:
     # Image tag will decide if Uptycs protect is enabled or disabled for k8sosquery.
     image_name: uptycs/k8sosquery:_IMAGE_TAG_
     pullPolicy: IfNotPresent
+    # To enable Liveness Probe for K8sosquery please follow the instructions from the following url:
+    # https://{DOMAIN}{DOMAIN_SUFFIX}/help/docs/knowledge-base/configuration/liveness-probe-k8sosquey-kubequery
     env:
     - name: CHROOT_DIR
       value: /host

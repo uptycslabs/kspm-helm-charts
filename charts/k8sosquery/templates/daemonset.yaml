@@ -42,6 +42,16 @@ spec:
       - name: {{ .Values.daemonset.containers.name }}
         image: {{ .Values.daemonset.containers.image_name }}
         imagePullPolicy: {{ .Values.daemonset.containers.pullPolicy }}
+        {{- if .Values.daemonset.containers.livenessProbe }}
+        livenessProbe:
+          exec:
+            command:
+            {{- range $k, $v := .Values.daemonset.containers.livenessProbe.exec.command }}
+            - {{ $v }}
+            {{- end }}
+          initialDelaySeconds: {{ .Values.daemonset.containers.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.daemonset.containers.livenessProbe.periodSeconds }}
+        {{- end }}
         securityContext:
           privileged: true
         env:

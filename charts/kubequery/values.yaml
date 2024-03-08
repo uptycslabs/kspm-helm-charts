@@ -3,8 +3,7 @@
 # Declare variables to be passed into your templates.
 
 # Kubernetes resources used by Kubequery are scoped to kubequery namespace.
-namespace:
-  name: kubequery
+namespace: kubequery
 
 # Incase of RedHat OpenShift clusters, Kubernetes resources used by Kubequery are scoped to uptycs-kubequery namespace.
 openshift:

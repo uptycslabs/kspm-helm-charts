@@ -13,7 +13,7 @@ webhooks:
       caBundle: {{ .Values.webhook.caBundle }}
       service:
         name: kubequery-webhook-gatekeeper
-        namespace: {{ .Values.namespace.name }}
+        namespace: {{ .Values.namespace }}
         path: /v1/admit
     failurePolicy: Ignore
     matchPolicy: Exact

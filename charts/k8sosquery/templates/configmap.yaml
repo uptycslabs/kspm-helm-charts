@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Values.configmap.name }}
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/name: uptycs-config
     app.kubernetes.io/version: 1.0.0

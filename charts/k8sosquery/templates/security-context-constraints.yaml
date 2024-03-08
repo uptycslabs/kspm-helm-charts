@@ -34,7 +34,7 @@ supplementalGroups:
 seccompProfiles:
 - '*'
 users:
-- system:serviceaccount:{{ .Values.namespace.name }}:uptycs-osquery
+- system:serviceaccount:{{ .Values.namespace }}:uptycs-osquery
 volumes:
 - '*'
 {{- end }}

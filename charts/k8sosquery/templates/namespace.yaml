@@ -1,8 +1,8 @@
-{{- if not (lookup "v1" "Namespace" ""  .Values.namespace.name ) }}
+{{- if not (lookup "v1" "Namespace" ""  .Values.namespace ) }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.namespace.name }}
+  name: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/name: uptycs
     app.kubernetes.io/version: 1.0.0

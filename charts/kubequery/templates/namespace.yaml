@@ -1,4 +1,4 @@
-{{- if not (lookup "v1" "Namespace" ""  .Values.namespace.name ) }}
+{{- if not (lookup "v1" "Namespace" ""  .Values.namespace ) }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -10,6 +10,6 @@ metadata:
   {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
   name: {{ .Values.openshift.namespace.name }}
   {{- else }}
-  name: {{ .Values.namespace.name }}
+  name: {{ .Values.namespace }}
   {{- end }}
 {{- end }}

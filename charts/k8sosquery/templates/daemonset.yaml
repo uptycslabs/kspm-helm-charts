@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ .Values.daemonset.name }}
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ .Values.namespace }}
   labels:
     app.kubernetes.io/name: uptycs-osquery
     app.kubernetes.io/version: 1.0.0

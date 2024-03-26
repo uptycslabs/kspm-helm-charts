@@ -7,8 +7,7 @@
 # For other cluster types such as AKS, EKS, OpenShift & Unmanaged please use values.yaml file.
 
 # Kubernetes resources used by K8sosquery are scoped to uptycs namespace.
-namespace:
-  name: uptycs
+namespace: uptycs
 
 # K8sosquery runs as a daemonset meaning one pod on each node of the cluster.
 # Daemonset pods run in privileged mode to access the host & container telemetry.

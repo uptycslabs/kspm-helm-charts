@@ -38,8 +38,10 @@ uptycsProtectDisabled: _UPTYCS_PROTECT_DISABLED_
 # Uptycs protect needs to be enabled to enable admission controllers.
 # Both image admission controller & gatekeeper admission controller are disabled by default.
 # Enable gatekeeper controller psp flag to install default PSPs.
+# In order to use runtime image security policy please ensure that image admission controller is enabled.
 admissionControllerParameters:
   disable_image_admission_controller: true
+  image_security_policy: _UPTYCS_IMAGE_SECURITY_POLICY_
   disable_gatekeeper_controller: true
   disable_gatekeeper_controller_psp: true
 

@@ -44,7 +44,6 @@ daemonset:
     - name: host
       mountPath: /host
       readOnly: true
-      mountPropagation: Bidirectional
     # This is mounted read-write and should start with host mount path
     - name: osquery
       mountPath: /host/home/uptycs/osquery

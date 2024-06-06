@@ -117,7 +117,7 @@ configmap:
       --compliance_data_limit=10240
       --config_accelerated_refresh=900
       --config_plugin=tls
-      --config_refresh=60
+      --config_refresh=900
       --config_tls_endpoint=/agent/config
       --config_tls_max_attempts=1
       --containerd_socket=/run/containerd/containerd.sock

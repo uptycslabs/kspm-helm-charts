@@ -11,7 +11,7 @@ webhooks:
       caBundle: {{ .Values.webhook.caBundle }}
       service:
         name: kubequery-webhook
-        namespace: {{ .Values.namespace }}
+        {{- include "kubequery.namespace" . }}
         path: /validate
     failurePolicy: Ignore
     sideEffects: None

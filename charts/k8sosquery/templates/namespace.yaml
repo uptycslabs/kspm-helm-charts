@@ -1,4 +1,4 @@
-{{- if .Release.Namespace }}
+{{- if ne .Release.Namespace "default"}}
 {{- else if not (lookup "v1" "Namespace" "" ".Values.namespace" ) }}
 apiVersion: v1
 kind: Namespace

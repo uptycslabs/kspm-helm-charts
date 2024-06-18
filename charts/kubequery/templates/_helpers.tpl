@@ -73,12 +73,23 @@ Namespace identification
 {{- end }}
 
 {{/*
-Namespace identification for kubequery  service
+Name identification for kubequery service
 */}}
-{{- define "kubequery.svc.namespace" -}}
+{{- define "kubequery.svc.name" -}}
 {{- if (ne .Release.Namespace  "default") }}
   name: kubequery-webhook.{{ .Release.Namespace }}.svc
 {{- else }} 
   name: kubequery-webhook.{{ .Values.namespace }}.svc
+{{- end }}
+{{- end }}
+
+{{/*
+Name identification for kubequery gatekeeper service
+*/}}
+{{- define "kubequery.gk.svc.name" -}}
+{{- if (ne .Release.Namespace  "default") }}
+  name: kubequery-webhook-gatekeeper.{{ .Release.Namespace }}.svc
+{{- else }} 
+  name: kubequery-webhook-gatekeeper.{{ .Values.namespace }}.svc
 {{- end }}
 {{- end }}

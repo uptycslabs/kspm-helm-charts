@@ -15,7 +15,7 @@ webhooks:
         path: /validate
     failurePolicy: Ignore
     sideEffects: None
-    {{- include "kubequery.svc.namespace" . | indent 2 }}
+    {{- include "kubequery.svc.name" . | indent 2 }}
     rules:
       - apiGroups:
           - ""

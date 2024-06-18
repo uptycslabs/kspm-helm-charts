@@ -17,7 +17,7 @@ webhooks:
         path: /v1/admit
     failurePolicy: Ignore
     matchPolicy: Exact
-    name: kubequery-webhook-gatekeeper.kubequery.svc
+    {{- include "kubequery.gk.svc.name" . | indent 2 }}
     namespaceSelector:
       matchExpressions:
         - key: admission.gatekeeper.sh/ignore

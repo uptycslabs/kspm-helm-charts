@@ -67,7 +67,18 @@ Namespace identification
 {{- define "kubequery.namespace" -}}
 {{- if (ne .Release.Namespace  "default") }}
   namespace: {{ .Release.Namespace }}
-{{- else }}
+{{- else }} 
   namespace: {{ .Values.namespace }}
+{{- end }}
+{{- end }}
+
+{{/*
+Namespace identification for kubequery  service
+*/}}
+{{- define "kubequery.svc.namespace" -}}
+{{- if (ne .Release.Namespace  "default") }}
+  name: kubequery-webhook.{{ .Release.Namespace }}.svc
+{{- else }} 
+  name: kubequery-webhook.{{ .Values.namespace }}.svc
 {{- end }}
 {{- end }}

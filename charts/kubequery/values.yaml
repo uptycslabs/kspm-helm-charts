@@ -33,10 +33,10 @@ deployment:
     # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
     tolerations:
     # Example toleration for running K8sosquery pods on arm64 architecture K8s nodes:
-    - key: kubernetes.io/arch
-      operator: Equal
-      value: arm64
-      effect: NoSchedule
+    # - key: kubernetes.io/arch
+    #   operator: Equal
+    #   value: arm64
+    #   effect: NoSchedule
 
 # Uptycs cloud service onto which the cluster is enrolled.
 uptycsCloud: _UPTYCS_CLOUD_

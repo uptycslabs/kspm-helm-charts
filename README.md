@@ -36,7 +36,7 @@ helm search repo kspm-helm-charts
 > [!TIP]
 > Tweak the appropriate fields in downloaded value files to enable or disable different features such as Uptycs Protect, Admission Controllers, and Detections on Audit Logs.
 
-3. Perform Helm installation of K8sosquery & Kubequery:
+3. Perform Helm installation of K8sosquery & Kubequery in chart's default namespace:
 ```console
 helm install k8sosquery -f <path_to_downloaded_k8sosquery_values_file> kspm-helm-charts/k8sosquery
 ```
@@ -44,10 +44,30 @@ helm install k8sosquery -f <path_to_downloaded_k8sosquery_values_file> kspm-helm
 helm install kubequery --set deployment.spec.hostname=<cluster_name_in_uptycs_ui> -f <path_to_downloaded_kubequery_values_file> kspm-helm-charts/kubequery
 ```
 
+
 4. Verify installation of K8sosquery & Kubequery:
 ```console
 kubectl get po -n uptycs
 ```
 ```console
 kubectl get po -n kubequery
+```
+
+> [!TIP]
+> If helm charts and kubernetes resources need to installed in user specified namespace the following steps ca be used instead of step 3 and 4:
+
+5. Perform Helm installation of K8sosquery & Kubequery in a specific namespace:
+```console
+helm install k8sosquery -f <path_to_downloaded_k8sosquery_values_file> kspm-helm-charts/k8sosquery --namespace <desired-namespace> --create-namespace
+```
+```console
+helm install kubequery --set deployment.spec.hostname=<cluster_name_in_uptycs_ui> -f <path_to_downloaded_kubequery_values_file> kspm-helm-charts/kubequery --namespace <desired-namespace> --create-namespace
+```
+
+6. Verify installation of K8sosquery & Kubequery:
+```console
+kubectl get po -n <desired-namespace>
+```
+```console
+kubectl get po -n <desired-namespace>
 ```

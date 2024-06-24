@@ -32,10 +32,10 @@ deployment:
     # Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes.
     # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
     tolerations:
-    # Example toleration for running Kubequery pod on arm64 architecture K8s node:
-    # - key: kubernetes.io/arch
+    # Example toleration for Kubequery:
+    # - key: install-kubequery
     #   operator: Equal
-    #   value: arm64
+    #   value: "true"
     #   effect: NoSchedule
 
 # Uptycs cloud service onto which the cluster is enrolled.

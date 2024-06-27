@@ -76,6 +76,19 @@ daemonset:
     secret:
       secretName: nginx-secret
       optional: false
+  # Tolerations for K8sosquery pods can be defined here in this section.
+  # Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes.
+  # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  tolerations:
+  - key: node-role.kubernetes.io/master
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/control-plane
+    effect: NoSchedule
+  # Example toleration for running K8sosquery pods on arm64 architecture K8s nodes:
+  # - key: kubernetes.io/arch
+  #   operator: Equal
+  #   value: arm64
+  #   effect: NoSchedule
 
 # Configmap contains osquery flags which define k8sosquery's configuration in the cluster.
 # NOTE: Please consult the Uptycs customer support before changing these configuration parameters.

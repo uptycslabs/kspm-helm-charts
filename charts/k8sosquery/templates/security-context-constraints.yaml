@@ -34,7 +34,11 @@ supplementalGroups:
 seccompProfiles:
 - '*'
 users:
+{{- if (ne .Release.Namespace  "default") }}
+- system:serviceaccount:{{ .Release.Namespace }}:uptycs-osquery
+{{- else }}
 - system:serviceaccount:{{ .Values.namespace }}:uptycs-osquery
+{{- end }}
 volumes:
 - '*'
 {{- end }}

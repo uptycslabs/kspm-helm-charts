@@ -60,3 +60,36 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Namespace identification
+*/}}
+{{- define "kubequery.namespace" -}}
+{{- if (ne .Release.Namespace  "default") }}
+  namespace: {{ .Release.Namespace }}
+{{- else }} 
+  namespace: {{ .Values.namespace }}
+{{- end }}
+{{- end }}
+
+{{/*
+Name identification for kubequery service
+*/}}
+{{- define "kubequery.svc.name" -}}
+{{- if (ne .Release.Namespace  "default") }}
+  name: kubequery-webhook.{{ .Release.Namespace }}.svc
+{{- else }} 
+  name: kubequery-webhook.{{ .Values.namespace }}.svc
+{{- end }}
+{{- end }}
+
+{{/*
+Name identification for kubequery gatekeeper service
+*/}}
+{{- define "kubequery.gk.svc.name" -}}
+{{- if (ne .Release.Namespace  "default") }}
+  name: kubequery-webhook-gatekeeper.{{ .Release.Namespace }}.svc
+{{- else }} 
+  name: kubequery-webhook-gatekeeper.{{ .Values.namespace }}.svc
+{{- end }}
+{{- end }}

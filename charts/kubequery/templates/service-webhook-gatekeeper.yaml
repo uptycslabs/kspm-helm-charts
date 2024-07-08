@@ -8,7 +8,7 @@ metadata:
   {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
   namespace: {{ .Values.openshift.namespace.name }}
   {{- else }}
-  namespace: {{ .Values.namespace }}
+  {{- include "kubequery.namespace" .}}
   {{- end }}
 spec:
   ports:

@@ -2,7 +2,7 @@ Chart {{ .Chart.Name }} has been installed successfully with the following confi
 
 Uptycs Protect: {{- if .Values.uptycsProtectDisabled }} Disabled {{- else }} Enabled {{- end }}
 Image Admission Controller: {{- if .Values.admissionControllerParameters.disable_image_admission_controller }} Disabled {{- else }} Enabled {{- end }}
-Image Security Policy: {{- if or (eq .Values.admissionControllerParameters.image_security_policy "_UPTYCS_IMAGE_SECURITY_POLICY_") (not .Values.admissionControllerParameters.image_security_policy) }} No Policy Configured {{- else }} {{ .Values.admissionControllerParameters.image_security_policy }} {{- end }}
+Image Security Policy: {{- if .Values.admissionControllerParameters.disable_image_admission_controller }} No Policy Configured {{- else if or (eq .Values.admissionControllerParameters.image_security_policy "_UPTYCS_IMAGE_SECURITY_POLICY_") (not .Values.admissionControllerParameters.image_security_policy) }} uptycs_default_image_security_policy {{- else }} {{ .Values.admissionControllerParameters.image_security_policy }} {{- end }}
 Gatekeeper Admission Controller: {{- if .Values.admissionControllerParameters.disable_gatekeeper_controller }} Disabled {{- else }} Enabled {{- end }}
 Default Gatekeeper Pod Security Policies: {{- if .Values.admissionControllerParameters.disable_gatekeeper_controller_psp }} Not Installed {{- else }} Installed {{- end }}
 Detections on Audit Logs for {{ .Values.cloudProvider }} platform: {{- if and (.Values.auditLogDetections.aks.disable_audit) (.Values.auditLogDetections.eks.disable_audit) (.Values.auditLogDetections.gke.disable_audit) (.Values.auditLogDetections.unmanaged_cluster.disable_audit) }} Disabled {{- else }} Enabled {{- end }}

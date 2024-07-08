@@ -29,6 +29,10 @@ spec:
         fsGroup: 1000
       terminationGracePeriodSeconds: 10
       serviceAccountName: kubequery-sa
+      {{- with .Values.deployment.spec.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
       containers:
         - env:
             - name: UPTYCS_CLOUD

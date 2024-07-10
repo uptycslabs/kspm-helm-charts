@@ -1,9 +1,10 @@
 # Uptycs Osquery flags file contents
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Values.configmap.name }}
-  namespace: {{ .Values.namespace }}
+  {{- include "k8sosquery.namespace" . }}
   labels:
     app.kubernetes.io/name: uptycs-config
     app.kubernetes.io/version: 1.0.0

@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ .Values.daemonset.name }}
-  namespace: {{ .Values.namespace }}
+  {{- include "k8sosquery.namespace" . }}
   labels:
     app.kubernetes.io/name: uptycs-osquery
     app.kubernetes.io/version: 1.0.0
@@ -22,14 +22,13 @@ spec:
         app.kubernetes.io/part-of: Uptycs
     spec:
       serviceAccountName: uptycs-osquery
+      {{- with .Values.daemonset.tolerations }}
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
-      - key: node-role.kubernetes.io/control-plane
-        effect: NoSchedule
-      {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
+      {{- toYaml . | nindent 6 }}
+      {{- if $.Capabilities.APIVersions.Has "config.openshift.io/v1" }}
       - key: node-role.kubernetes.io/infra
         effect: NoSchedule
+      {{- end }}
       {{- end }}
       # nodeSelector:
       #   node-role.kubernetes.io/worker: ''

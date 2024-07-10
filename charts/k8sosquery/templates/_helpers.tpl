@@ -60,3 +60,15 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Namespace identification
+*/}}
+{{- define "k8sosquery.namespace" -}}
+{{- if (ne .Release.Namespace  "default") }}
+  namespace: {{ .Release.Namespace }}
+{{- else }}
+  namespace: {{ .Values.namespace }}
+{{- end }}
+{{- end }}

@@ -38,6 +38,9 @@ spec:
       hostPID: {{ .Values.daemonset.hostPID }}
       hostIPC: {{ .Values.daemonset.hostIPC }}
       hostNetwork: {{ .Values.daemonset.hostNetwork }}
+      {{- if .Values.daemonset.dnsPolicy }}
+      dnsPolicy: {{ .Values.daemonset.dnsPolicy }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ .Values.daemonset.terminationGracePeriodSeconds }}
       containers:
       - name: {{ .Values.daemonset.containers.name }}
@@ -52,6 +55,12 @@ spec:
             {{- end }}
           initialDelaySeconds: {{ .Values.daemonset.containers.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.daemonset.containers.livenessProbe.periodSeconds }}
+        {{- end }}
+        {{- if eq .Values.daemonset.dnsPolicy "ClusterFirstWithHostNet" }}
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "mount --bind /etc/resolv.conf /host/etc/resolv.conf"]
         {{- end }}
         securityContext:
           privileged: true

@@ -15,5 +15,9 @@ data:
   osquery.tags: |
 {{ .Values.configmap.data.tags | trim | indent 4 }}
 {{- end }}
+{{- if .Values.configmap.data.local_proxy }}
+  osquery.local_proxy: |
+{{ .Values.configmap.data.local_proxy | trim | indent 4 }}
+{{- end }}
   osquery.flags: |
 {{ .Values.configmap.data.osquery | indent 4 }}

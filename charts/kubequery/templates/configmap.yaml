@@ -49,6 +49,25 @@ data:
   {{- end }}
 {{- end }}
     --disable_unmanaged_cluster_audit={{ .Values.auditLogDetections.unmanaged_cluster.disable_audit }}
-{{ .Values.configmap.data.kubequeryFlags | indent 4 }}
+    --disable_events=false
+    --vulnerabilities_refresh_mins=1
+    --extensions_interval=5
+    --extensions_timeout=5
+    --schedule_splay_percent=50
+    --tls_hostname={{ .Values.uptycsCloud }}
+    --tls_server_certs=/opt/uptycs/etc/nginx/ca.crt
+    --enroll_secret_path=/opt/uptycs/config/enroll/enroll.secret
+    --enroll_tls_endpoint=/agent/enroll
+    --config_plugin=tls
+    --config_tls_endpoint=/agent/config
+    --logger_plugin=tls
+    --logger_tls_endpoint=/agent/kubequery/log
+    --logger_tls_compress=true
+    --distributed_plugin=tls
+    --distributed_tls_read_endpoint=/agent/distributed_read
+    --distributed_tls_write_endpoint=/agent/distributed_write
+    --disable_distributed=false
+    --distributed_interval=0
+    --distributed_tls_max_attempts=3
+    --config_refresh=900
   kubequery.conf: |-
-{{ .Values.configmap.data.kubequeryConf | indent 4 }}

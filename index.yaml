@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   k8sosquery:
   - apiVersion: v2
+    created: "2024-07-29T16:33:44.765409514Z"
+    description: A Helm chart for Uptycs K8sosquery Agent
+    digest: 857ca300e4c6b4ae3b32733b2ff74963a29b36796d0fb1f61eda64c8c5fbda71
+    name: k8sosquery
+    type: application
+    urls:
+    - https://github.com/uptycslabs/kspm-helm-charts/releases/download/k8sosquery-1.2.0/k8sosquery-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
     created: "2024-07-24T17:07:17.372366121Z"
     description: A Helm chart for Uptycs K8sosquery Agent
     digest: 19728db64f4709af0d9c7949bb8628d08216e2b80734247724dc93ff1b98a735
@@ -120,6 +129,15 @@ entries:
     version: 1.0.0
   kubequery:
   - apiVersion: v2
+    created: "2024-07-29T16:33:44.886528533Z"
+    description: A Helm chart for Uptycs Kubequery Agent
+    digest: c5845addbc066e0254e0727cb17f6bdfcba1b064f008ebec28857b2614f80fd2
+    name: kubequery
+    type: application
+    urls:
+    - https://github.com/uptycslabs/kspm-helm-charts/releases/download/kubequery-1.1.0/kubequery-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
     created: "2024-07-08T14:58:22.982411203Z"
     description: A Helm chart for Uptycs Kubequery Agent
     digest: 0c98328d3a234ab6dbcb7810e1dea5bb58ca274a1adbd6a123522b936d0bfa54
@@ -200,4 +218,4 @@ entries:
     urls:
     - https://github.com/uptycslabs/kspm-helm-charts/releases/download/kubequery-1.0.0/kubequery-1.0.0.tgz
     version: 1.0.0
-generated: "2024-07-24T17:07:17.372509Z"
+generated: "2024-07-29T16:33:44.886703158Z"

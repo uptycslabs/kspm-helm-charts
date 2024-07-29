@@ -35,13 +35,13 @@ spec:
       # If this daemonset should be restricted to a set of nodes, use node selector to specify the node label(s)
       # nodeSelector:
       #  app: uptycs-osquery
-      hostPID: {{ .Values.daemonset.hostPID }}
-      hostIPC: {{ .Values.daemonset.hostIPC }}
-      hostNetwork: {{ .Values.daemonset.hostNetwork }}
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
       {{- if .Values.daemonset.dnsPolicy }}
       dnsPolicy: {{ .Values.daemonset.dnsPolicy }}
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.daemonset.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: 30
       containers:
       - name: {{ .Values.daemonset.containers.name }}
         image: {{ .Values.daemonset.containers.image_name }}

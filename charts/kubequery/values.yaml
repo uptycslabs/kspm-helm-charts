@@ -54,6 +54,7 @@ admissionControllerParameters:
   image_security_policy: _UPTYCS_IMAGE_SECURITY_POLICY_
   disable_gatekeeper_controller: true
   disable_gatekeeper_controller_psp: true
+  gatekeeper_audit_interval: _UPTYCS_PROTECT_AUDIT_INTERVAL_
 
 # Use these options to enable real-time detections on Kubernetes audit logs.
 # If you enable detections on audit logs please make sure to fill in the required fields for that specific cloud-provider.
@@ -78,35 +79,6 @@ auditLogDetections:
     gke_secret: __GKE_SECRET__
   unmanaged_cluster:
     disable_audit: true
-
-# Configmap contains kubequery flags which define kubequery's configuration in the cluster.
-# NOTE: Please consult the Uptycs customer support before changing these configuration parameters.
-configmap:
-  data:
-    kubequeryFlags: |
-      --gatekeeper_audit_interval=_UPTYCS_PROTECT_AUDIT_INTERVAL_
-      --disable_events=false
-      --vulnerabilities_refresh_mins=1
-      --extensions_interval=5
-      --extensions_timeout=5
-      --schedule_splay_percent=50
-      --tls_hostname=_UPTYCS_CLOUD_
-      --tls_server_certs=/opt/uptycs/etc/nginx/ca.crt
-      --enroll_secret_path=/opt/uptycs/config/enroll/enroll.secret
-      --enroll_tls_endpoint=/agent/enroll
-      --config_plugin=tls
-      --config_tls_endpoint=/agent/config
-      --logger_plugin=tls
-      --logger_tls_endpoint=/agent/kubequery/log
-      --logger_tls_compress=true
-      --distributed_plugin=tls
-      --distributed_tls_read_endpoint=/agent/distributed_read
-      --distributed_tls_write_endpoint=/agent/distributed_write
-      --disable_distributed=false
-      --distributed_interval=0
-      --distributed_tls_max_attempts=3
-      --config_refresh=900
-    kubequeryConf: |
 
 # Webhook CA certs bundle.
 webhook:

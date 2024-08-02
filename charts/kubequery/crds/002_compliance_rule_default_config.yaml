@@ -1,0 +1,486 @@
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N001
+standards: nsa
+title: Use containers built to run applications as non-root users.
+remediation: --- 
+reason: The following pods were detected with containers with no non-root users configured
+metadata:
+  name: compliance-rule-non-root-user
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+spec:
+  rego: |
+    package filter
+    allow[result] {
+            input.object.Object.kind == "Pod"
+            not input.object.Object.spec.securityContext.runAsUser
+            result := input.object.Object.metadata.name
+    }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N002
+standards: nsa
+title: Run containers with immutable file systems
+remediation: ---
+reason: The following pods were detected with containers with readwrite file systems
+metadata:
+  name: compliance-rule-immutable-container
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+spec:
+  rego: |
+    package filter
+    allow[result] {
+            input.object.Object.kind == "Pod"
+            not is_readonlyrfs
+            result := input.object.Object.metadata.name
+    }
+    is_readonlyrfs{
+        input.object.Object.spec.containers[_].securityContext.readOnlyRootFilesystem == true
+    }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N003
+standards: nsa
+title: Define a Pod Security Policy
+remediation: ---
+reason: There is no Pod security policy defined
+metadata:
+  name: compliance-rule-no-psp
+resnotpresentcheck: yes
+resources:
+   - apiGroups: 'policy'
+     apiVersions: '*'
+     resource:
+      - podsecuritypolicies
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                result := ""
+             }
+
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N004
+standards: nsa
+title: Prevent Privileged container
+remediation: ---
+reason: The following containers have privilege configuration
+metadata:
+  name: compliance-rule-priv-container
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+spec:
+  rego: |
+    package filter
+    allow[result] {
+            input.object.Object.kind == "Pod"
+            input.object.Object.spec.containers[_].securityContext.privileged == true
+            result := input.object.Object.spec.containers[_].name
+    }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N005
+standards: nsa
+title: Deny containers with HostPID access
+remediation: ---
+reason: The following pods were detected with HostPID access
+metadata:
+  name: compliance-rule-hostpid
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+spec:
+  rego: |
+    package filter
+    allow[result] {
+            input.object.Object.kind == "Pod"
+            input.object.Object.spec.hostPID == true
+            result := input.object.Object.metadata.name
+    }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N006
+standards: nsa
+title: Deny containers with HostIPC access
+remediation: ---
+reason: The following pods were detected with HostIPC access
+metadata:
+  name: compliance-rule-hostipc
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+spec:
+  rego: |
+    package filter
+    allow[result] {
+            input.object.Object.kind == "Pod"
+            input.object.Object.spec.hostIPC == true
+            result := input.object.Object.metadata.name
+    }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N007
+standards: nsa
+title: Deny containers with HostNetwork access
+remediation: ---
+reason: The following pods were detected with HostNetwork access
+metadata:
+  name: compliance-rule-hostnetwork
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+spec:
+  rego: |
+    package filter
+    allow[result] {
+            input.object.Object.kind == "Pod"
+            input.object.Object.spec.hostNetwork == true
+            result := input.object.Object.metadata.name
+    }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N008
+standards: nsa
+title: Deny containers with allowedHostPath configurations
+remediation: --- 
+reason: Following containers have allowedHostPath configurations
+resources:
+   - apiGroups: 'policy'
+     apiVersions: '*'
+     resource:
+      - podsecuritypolicies
+metadata:
+  name: compliance-rule-psp-allowed-host-path
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                # input.object.kind == "PodSecurityPolicy"
+                not input.object.spec.allowedHostPath
+                result := input.object.metadata.name
+             }
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N009
+standards: nsa
+title: Deny containers with privilege escalation
+remediation: ---
+reason: Following pod security policies were found with privilege escalation
+resources:
+   - apiGroups: 'policy'
+     apiVersions: '*'
+     resource:
+      - podsecuritypolicies
+metadata:
+  name: compliance-rule-psp-allow-priv-escalation
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                # input.object.kind == "PodSecurityPolicy"
+                input.object.spec.allowPrivilegeEscalation == true
+                result := input.object.metadata.name
+             }
+              
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N010
+standards: nsa
+title: Deny containers with execute as root permissions
+remediation: ---
+reason: Following pod security policies were detected with execute as root permissions
+resources:
+   - apiGroups: 'policy'
+     apiVersions: '*'
+     resource:
+      - podsecuritypolicies
+metadata:
+  name: compliance-rule-psp-execute-as-root
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                # input.object.Object.kind == "Pod"
+                not input.object.spec.runasuser == "MustRunAsNonRoot"
+                result := input.object.metadata.name
+             }
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N011
+standards: nsa
+title: Enabling hardening through SELinux
+remediation: ---
+reason: Hardening through SELinux not present in policy
+resources:
+   - apiGroups: 'policy'
+     apiVersions: '*'
+     resource:
+      - podsecuritypolicies
+metadata:
+  name: compliance-rule-psp-selinux
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                # input.object.Object.kind == "Pod"
+                not input.object.spec.selinux
+                result := input.object.metadata.name
+             }
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N018
+standards: nsa
+title: Set up network policies to isolate resources including Pods, services and namespaces
+remediation: ---
+reason: Network policy does not isolate resources -
+resources:
+   - apiGroups: 'networking.k8s.io'
+     apiVersions: 'v1'
+     resource:
+      - networkpolicies
+metadata:
+  name: compliance-rule-network-podselector
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                 contains(input.object.spec.policyTypes, "Ingress")
+                 input.object.spec.ingress[_].from[_].podSelector == {}
+                 result := input.object.metadata.name
+             }
+             contains(list, element) {
+              some i
+              list[i] == element
+             }
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N019
+standards: nsa
+title: Create an explicit deny network policy(ingress/egress blocked)
+remediation: ---
+reason: Explicit deny network policy(ingress/egress blocked) not present for policy -
+resources:
+   - apiGroups: 'networking.k8s.io'
+     apiVersions: 'v1'  
+     resource:
+      - networkpolicies
+metadata:
+  name: compliance-rule-network-ingress
+spec:
+  rego: |
+    package filter 
+    allow[result] {
+      contains(input.object.spec.policyTypes, "Ingress")
+      input.object.spec.podSelector != {}
+      result :=  input.object.metadata.name
+    }
+    allow[result] {
+      contains(input.object.spec.policyTypes, "Egress")
+      input.object.spec.podSelector != {}
+      result :=  input.object.metadata.name
+    }
+    contains(list, element) {
+      some i
+      list[i] == element
+    }
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N020
+standards: nsa
+title: Set up Network Policy
+remediation: ---
+reason: No explicit nework policy defined
+resources:
+   - apiGroups: 'networking.k8s.io'
+     apiVersions: 'v1'
+     resource:
+      - networkpolicies
+metadata:
+  name: compliance-rule-network-policy
+resnotpresentcheck: yes
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                result := ""
+             }
+
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N023
+standards: nsa
+title: Use ResourceQuota policies
+remediation: ---
+reason: No ResourceQuota policies defined
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - resourcequotas
+metadata:
+  name: compliance-rule-resource-quota
+resnotpresentcheck: yes
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                result := ""
+             }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N024
+standards: nsa
+title: Use LimitRange policies
+remediation: ---
+reason: No LimitRange policies at Pod level for the following pods
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+metadata:
+  name: compliance-rule-limit-range-pod
+spec:
+  rego: |
+    package filter
+        allow[result] {
+             input.object.Object.kind == "Pod"
+             not is_cpu_limit_set
+             not is_mem_limit_set
+             result := input.object.Object.metadata.name
+             }
+             is_cpu_limit_set()
+             {
+                input.object.Object.spec.containers[_].resources.limits.cpu
+             }
+             is_mem_limit_set()
+             {
+                input.object.Object.spec.containers[_].resources.limits.memory
+             }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N026
+standards: nsa
+title: Use LimitRange policies
+remediation: ---
+reason: No LimitRange policies defined
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - limitranges
+metadata:
+  name: compliance-rule-limitrange
+resnotpresentcheck: yes
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                result := ""
+             }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N032
+standards: nsa
+title: automountServiceAccountToken should be set to false
+remediation: ---
+reason: automountServiceAccountToken should be set to true in the following pods
+resources:
+   - apiGroups: ''
+     apiVersions: v1
+     resource:
+      - pods
+metadata:
+  name: compliance-rule-automount-service-account-token
+spec:
+  rego: |
+    package filter
+        allow[result] {
+             input.object.Object.kind == "Pod"
+             not input.object.Object.spec.automountServiceAccountToken == true
+             result := input.object.Object.metadata.name
+             }
+
+---
+apiVersion: compliance.uptycs.io/v1beta1
+kind: ComplianceRule
+complianceID: N033
+standards: nsa
+title: Create RBAC policies 
+remediation: Create RBAC policies with unique roles for users, administrators, developers, service accounts, and infrastructure team.
+reason: No RBAC policies defined
+resources:
+   - apiGroups: "rbac.authorization.k8s.io"
+     apiVersions: "v1"
+     resource:
+      - roles
+   - apiGroups: "rbac.authorization.k8s.io"
+     apiVersions: "v1"
+     resource:
+      - clusterroles
+   - apiGroups: "rbac.authorization.k8s.io"
+     apiVersions: "v1"
+     resource:
+      - rolebindings
+   - apiGroups: "rbac.authorization.k8s.io"
+     apiVersions: "v1"
+     resource:
+      - clusterrolebindings
+resnotpresentcheck: yes
+metadata:
+  name: compliance-rule-rbac
+spec:
+  rego: |
+    package filter
+        allow[result] {
+                result := ""
+             }
+
+
+---

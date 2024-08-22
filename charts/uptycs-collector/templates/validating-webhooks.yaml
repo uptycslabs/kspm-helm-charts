@@ -1,0 +1,87 @@
+apiVersion: v1
+data:
+  tls.crt: {{ .Values.webhookServerTLS.crt  }}
+  tls.key: {{ .Values.webhookServerTLS.key }}
+kind: Secret
+metadata:
+  name: webhook-server-tls
+  namespace: kubequery
+type: kubernetes.io/tls
+---
+{{ if and (not .Values.uptycsProtectDisabled) (not .Values.admissionControllerParameters.disable_gatekeeper_controller) -}}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  labels:
+    gatekeeper.sh/system: "yes"
+  name: kubequery-webhook-gatekeeper
+webhooks:
+  - admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      caBundle: {{ .Values.webhook.caBundle }}
+      service:
+        name: kubequery-webhook-gatekeeper
+        namespace: kubequery
+        path: /v1/admit
+    failurePolicy: Ignore
+    matchPolicy: Exact
+    name: kubequery-webhook-gatekeeper.kubequery.svc
+    namespaceSelector:
+      matchExpressions:
+        - key: admission.gatekeeper.sh/ignore
+          operator: DoesNotExist
+    rules:
+      - apiGroups:
+          - '*'
+        apiVersions:
+          - '*'
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - '*'
+    sideEffects: None
+    timeoutSeconds: 3
+{{- end}}
+---
+{{ if and (not .Values.uptycsProtectDisabled) (not .Values.admissionControllerParameters.disable_image_admission_controller) -}}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: kubequery-webhook
+webhooks:
+  -
+    admissionReviewVersions:
+      - v1
+    clientConfig:
+      caBundle: {{ .Values.webhook.caBundle }}
+      service:
+        name: kubequery-webhook
+        namespace: kubequery
+        path: /validate
+    failurePolicy: Ignore
+    sideEffects: None
+    name: kubequery-webhook.kubequery.svc
+    rules:
+      - apiGroups:
+          - ""
+          - apps
+        apiVersions:
+          - v1beta1
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - pods
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          - jobs
+          - cronjobs
+        scope: "Namespaced"
+    timeoutSeconds: 30
+{{- end}}

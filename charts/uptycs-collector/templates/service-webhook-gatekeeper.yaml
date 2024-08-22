@@ -1,0 +1,16 @@
+{{ if and (not .Values.uptycsProtectDisabled) (not .Values.admissionControllerParameters.disable_gatekeeper_controller) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    gatekeeper.sh/system: "yes"
+  name: kubequery-webhook-gatekeeper
+  namespace: kubequery
+spec:
+  ports:
+    - name: https-webhook-server
+      port: 443
+      targetPort: gk-webhook-api
+  selector:
+      app: kubequery
+{{- end}}

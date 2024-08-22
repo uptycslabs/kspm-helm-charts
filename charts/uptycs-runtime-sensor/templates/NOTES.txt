@@ -1,0 +1,3 @@
+Chart {{ .Chart.Name }} has been installed successfully with the following configuration:
+
+Uptycs Protect: {{- if contains "Uptycs-Protect" .Values.daemonset.containers.image_name }} Enabled {{- else }} Disabled {{- end }}

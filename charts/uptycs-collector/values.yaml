@@ -1,0 +1,68 @@
+# Default configuration values file for Uptycs Kubequery EKS Add-on.
+# This is a YAML-formatted file.
+
+# Kubequery deployment & required K8s resources are created in "kubequery" namespace.
+# It runs as a deployment meaning only one pod in a Kubernetes cluster.
+deployment:
+  spec:
+    containers:
+      image_name: 709825985650.dkr.ecr.us-east-1.amazonaws.com/uptycs/kubequery:4.0.32
+      pullPolicy: IfNotPresent
+      # To enable Liveness Probe for Kubequery please follow the instructions from the following url:
+      # https://{DOMAIN}{DOMAIN_SUFFIX}/help/docs/knowledge-base/configuration/liveness-probe-k8sosquey-kubequery
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 1000Mi
+        requests:
+          cpu: 200m
+          memory: 500Mi
+    # This field defines the cluster name that shows up in Uptycs UI.
+    hostname: _UPTYCS_CLUSTER_NAME_
+    hostNetwork: false
+    # Tolerations for Kubequery pod can be defined here in this section.
+    # Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes.
+    # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+    tolerations:
+    # Example toleration for Kubequery:
+    # - key: install-kubequery
+    #   operator: Equal
+    #   value: "true"
+    #   effect: NoSchedule
+
+# Uptycs cloud service onto which the cluster is enrolled.
+uptycsCloud: _UPTYCS_CLOUD_
+
+# Uptycs protect flag controls if remediation & blocking features are enabled.
+uptycsProtectDisabled: _UPTYCS_PROTECT_DISABLED_
+
+# Uptycs protect needs to be enabled to enable admission controllers.
+# Both image admission controller & gatekeeper admission controller are disabled by default.
+# Enable gatekeeper controller psp flag to install default PSPs.
+# In order to use runtime image security policy please ensure that image admission controller is enabled.
+# If image admission controller is enabled & no image security policy is specified we will use "uptycs_default_image_security_policy".
+admissionControllerParameters:
+  disable_image_admission_controller: true
+  image_security_policy: _UPTYCS_IMAGE_SECURITY_POLICY_
+  disable_gatekeeper_controller: true
+  disable_gatekeeper_controller_psp: true
+  gatekeeper_controller_audit_interval: _UPTYCS_PROTECT_AUDIT_INTERVAL_
+
+# Use these options to enable real-time detections on Kubernetes audit logs for EKS clusters.
+auditLogDetections:
+  eks:
+    disable_audit: true
+    eks_log_group:
+    eks_log_stream:
+    eks_log_region:
+
+# Webhook CA certs bundle.
+webhook:
+  caBundle: _CA_BUNDLE_
+
+# Webhook Server TLS secret is used by Kubequery admission controllers to setup the HTTPS endpoints.
+# These endpoints are then called by K8s API server during resource admission.
+# This secret contains TLS cert & key for admission controller webhooks.
+webhookServerTLS:
+  crt: __UPTYCS_WEBHOOK_SERVER_TLS_CRT__
+  key: __UPTYCS_WEBHOOK_SERVER_TLS_KEY__

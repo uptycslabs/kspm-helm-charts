@@ -1,0 +1,13 @@
+{{ if and (not .Values.uptycsProtectDisabled) (not .Values.admissionControllerParameters.disable_image_admission_controller) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubequery-webhook
+  namespace: kubequery
+spec:
+  ports:
+    - port: 443
+      targetPort: webhook-api
+  selector:
+    app: kubequery
+{{- end}}

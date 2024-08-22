@@ -1,0 +1,34 @@
+# Seller and product related information
+sellerName: Uptycs, Inc.
+sellerMarketPlaceAlias: Uptycs
+accountId:
+productName: Uptycs Kubernetes and Container Security
+productCategory: security
+productUrl: https://www.uptycs.com/products/attack-surfaces/containers-kubernetes
+marketplaceProductId:
+marketplaceProductUrl:
+
+# Add-on information
+addon:
+  name: Uptycs Runtime Sensor
+  versionName: Example Software Solution 1
+  version: 1.0.0
+  namespace: uptycs
+  type: security
+  helmChartUrl:
+  helmChartUrlProtocol: oci
+  containerImagesUrls:
+    - 
+  prerequisites: >
+    Follow instructions in: 
+  usageInstructions: >
+    Follow instructions in: 
+  deliveryOptionDescription: >
+    EKS add-on installation
+  kubernetesVersion:
+    - "1.26"
+    - "1.27"
+    - "1.28"
+  architectures:
+    - amd64
+    - arm64

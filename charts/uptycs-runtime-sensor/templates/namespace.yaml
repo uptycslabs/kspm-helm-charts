@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: uptycs
+  labels:
+    app.kubernetes.io/name: uptycs
+    app.kubernetes.io/version: 1.0.0
+    app.kubernetes.io/component: endpoint
+    app.kubernetes.io/part-of: Uptycs

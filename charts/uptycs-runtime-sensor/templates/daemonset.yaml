@@ -1,0 +1,98 @@
+# Create Uptycs Osquery daemonset
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: uptycs-osquery
+  namespace: uptycs
+  labels:
+    app.kubernetes.io/name: uptycs-osquery
+    app.kubernetes.io/version: 1.0.0
+    app.kubernetes.io/component: endpoint
+    app.kubernetes.io/part-of: Uptycs
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: uptycs-osquery
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: uptycs-osquery
+        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/component: endpoint
+        app.kubernetes.io/part-of: Uptycs
+    spec:
+      serviceAccountName: uptycs-osquery
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      # nodeSelector:
+      #   node-role.kubernetes.io/worker: ''
+      # If this daemonset should be restricted to a set of nodes, use node selector to specify the node label(s)
+      # nodeSelector:
+      #  app: uptycs-osquery
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: uptycs-osquery
+        image: {{ .Values.daemonset.containers.image_name }}
+        imagePullPolicy: Always
+        {{- if .Values.daemonset.containers.livenessProbe }}
+        livenessProbe:
+          exec:
+            command:
+            {{- range $k, $v := .Values.daemonset.containers.livenessProbe.exec.command }}
+            - {{ $v }}
+            {{- end }}
+          initialDelaySeconds: {{ .Values.daemonset.containers.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.daemonset.containers.livenessProbe.periodSeconds }}
+        {{- end }}
+        securityContext:
+          privileged: true
+        env:
+        - name: CHROOT_DIR
+          value: /host
+        - name: SOFTWARE_DIR
+          value: /opt/uptycs/osquery
+        resources:
+          limits:
+            cpu: {{ .Values.daemonset.containers.resources.limits.cpu }}
+            memory: {{ .Values.daemonset.containers.resources.limits.memory }}
+          requests:
+            cpu: {{ .Values.daemonset.containers.resources.requests.cpu }}
+            memory: {{ .Values.daemonset.containers.resources.requests.memory }}
+        volumeMounts:
+        - name: host
+          mountPath: /host
+          readOnly: true
+        # This is mounted read-write and should start with host mount path
+        - name: osquery
+          mountPath: /host/opt/uptycs/osquery
+          readOnly: false
+        - name: config
+          mountPath: /etc/osquery/flags
+        - name: secret
+          mountPath: /etc/osquery/secrets
+        - mountPath: /etc/osquery
+          name: nginxsecret
+          readOnly: true
+      volumes:
+      - name: host
+        hostPath:
+          path: /
+      - name: osquery
+        hostPath:
+          path: /opt/uptycs/osquery
+      - name: secret
+        secret:
+          secretName: uptycs-secret
+      - name: nginxsecret
+        secret:
+          secretName: nginx-secret
+          optional: false
+      - name: config
+        configMap:
+          name: uptycs-config

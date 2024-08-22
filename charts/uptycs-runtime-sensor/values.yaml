@@ -1,0 +1,30 @@
+# Default configuration values file for Uptycs K8sosquery EKS Add-on.
+# This is a YAML-formatted file.
+
+# K8sosquery daemonset & required K8s resources are created in "uptycs" namespace.
+# It runs as a daemonset meaning one pod on each node of the cluster.
+# Daemonset pods run in privileged mode to access the host & container telemetry.
+daemonset:
+  containers:
+    # Image tag will decide if Uptycs protect is enabled or disabled for k8sosquery.
+    image_name: 709825985650.dkr.ecr.us-east-1.amazonaws.com/uptycs/k8sosquery:5.12.1.11-Uptycs-Protect-202406161230
+    # To enable Liveness Probe for K8sosquery please follow the instructions from the following url:
+    # https://{DOMAIN}{DOMAIN_SUFFIX}/help/docs/knowledge-base/configuration/liveness-probe-k8sosquey-kubequery
+    
+    # Resources specify the default values for CPU & memory settings for K8sosquery.
+    # These can be changed based on the number of containers running in each node of the cluster.
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 500Mi
+      requests:
+        cpu: 200m
+        memory: 100Mi
+
+# Uptycs cloud service onto which the cluster node is enrolled.
+uptycsCloud: _UPTYCS_CLOUD_
+
+osquery:
+  # osquery tags are optional & hence empty by default but example usage is:
+  # tags: key1/value1,key2/value2,key3/value3
+  tags:

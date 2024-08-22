@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubequery-config
+  namespace: kubequery
+data:
+  kubequery.flags: |-
+{{- range $key, $value := .Values.admissionControllerParameters }}
+  {{- if $value }}
+    --{{ $key }}={{ $value }}
+  {{- end }}
+  {{- if not $value }}
+    --{{ $key }}=false
+  {{- end }}
+{{- end }}
+{{- if .Values.auditLogDetections.eks.disable_audit }}
+    --disable_eks_audit={{ .Values.auditLogDetections.eks.disable_audit }}
+{{- else }}
+    --disable_eks_audit={{ .Values.auditLogDetections.eks.disable_audit }}
+  {{- range $key, $value := .Values.auditLogDetections.eks }}
+    {{- if $value }}
+    --{{ $key }}={{ $value }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+    --gatekeeper_audit_interval={{ .Values.admissionControllerParameters.gatekeeper_controller_audit_interval }}
+    --disable_events=false
+    --vulnerabilities_refresh_mins=1
+    --extensions_interval=5
+    --extensions_timeout=5
+    --schedule_splay_percent=50
+    --tls_hostname={{ .Values.uptycsCloud }}
+    --tls_server_certs=/opt/uptycs/etc/nginx/ca.crt
+    --enroll_secret_path=/opt/uptycs/config/enroll/enroll.secret
+    --enroll_tls_endpoint=/agent/enroll
+    --config_plugin=tls
+    --config_tls_endpoint=/agent/config
+    --logger_plugin=tls
+    --logger_tls_endpoint=/agent/kubequery/log
+    --logger_tls_compress=true
+    --distributed_plugin=tls
+    --distributed_tls_read_endpoint=/agent/distributed_read
+    --distributed_tls_write_endpoint=/agent/distributed_write
+    --disable_distributed=false
+    --distributed_interval=0
+    --distributed_tls_max_attempts=3
+    --config_refresh=900
+  kubequery.conf: |-

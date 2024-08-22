@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kubequery
+  name: kubequery
+  namespace: kubequery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubequery
+  template:
+    metadata:
+      labels:
+        app: kubequery
+        cloudprovider: EKS
+    spec:
+      hostname: {{ .Values.deployment.spec.hostname }}
+      hostNetwork: {{ .Values.deployment.spec.hostNetwork }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: kubequery-sa
+      {{- with .Values.deployment.spec.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      containers:
+        - env:
+            - name: UPTYCS_CLOUD
+              value: {{ .Values.uptycsCloud }}
+          name: uptycs-kubequery
+          image: {{ .Values.deployment.spec.containers.image_name }}
+          imagePullPolicy: {{ .Values.deployment.spec.containers.pullPolicy }}
+          {{- if .Values.deployment.spec.containers.livenessProbe }}
+          livenessProbe:
+            exec:
+              command:
+              {{- range $k, $v := .Values.deployment.spec.containers.livenessProbe.exec.command }}
+              - {{ $v }}
+              {{- end }}
+            initialDelaySeconds: {{ .Values.deployment.spec.containers.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.deployment.spec.containers.livenessProbe.periodSeconds }}
+          {{- end }}
+          ports:
+            - containerPort: 8443
+              name: webhook-api
+            - containerPort: 8444
+              name: gk-webhook-api
+          resources:
+            limits:
+              cpu: {{ .Values.deployment.spec.containers.resources.limits.cpu }}
+              memory: {{ .Values.deployment.spec.containers.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.deployment.spec.containers.resources.requests.cpu }}
+              memory: {{ .Values.deployment.spec.containers.resources.requests.memory }}
+          volumeMounts:
+          - name: config
+            mountPath: /opt/uptycs/config
+          - mountPath: /run/secrets/tls
+            name: webhook-tls-certs
+            readOnly: true
+          - mountPath: /opt/uptycs/config/enroll
+            name: enrollsecret
+            readOnly: true
+          - mountPath: /opt/uptycs/etc/nginx
+            name: nginxsecret
+            readOnly: true
+      imagePullSecrets:
+        - name: mysecret
+      volumes:
+      - name: config
+        configMap:
+          name: kubequery-config
+      - name: webhook-tls-certs
+        secret:
+          secretName: webhook-server-tls
+      - name: enrollsecret
+        secret:
+          secretName: enroll.secret
+          optional: false
+      - name: nginxsecret
+        secret:
+          secretName: nginx-secret
+          optional: false

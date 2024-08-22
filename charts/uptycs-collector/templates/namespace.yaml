@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/component: cluster
+    app.kubernetes.io/name: kubequery
+    app.kubernetes.io/part-of: Uptycs
+    app.kubernetes.io/version: "1.0.0"
+  name: kubequery

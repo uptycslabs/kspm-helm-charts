@@ -101,7 +101,7 @@ Service account annotation for IRSA in AWS
 {{- if (eq .Values.cloudProvider  "EKS")   }}
 {{- if (not (empty .Values.IRSA)  )}}
   annotations:
-     eks.amazonaws.com/role-arn:arn : {{ .Values.IRSA }}
+     eks.amazonaws.com/role-arn : {{ .Values.IRSA }}
 {{- end }}
 {{- end }}
 {{- end }}

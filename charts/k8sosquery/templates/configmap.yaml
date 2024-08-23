@@ -171,7 +171,7 @@ data:
     --threat_indicator_refresh_interval=7200
     --tls_hostname={{ .Values.uptycsCloud }}
     --tls_threat_indicator_index_interval=3600
-    --try_audit_based_events_first=true
+    --try_audit_based_events_first=false
     --utc=true
     --verbose_level=2
     --watchdog_above_sixteen_alloc_vm=32

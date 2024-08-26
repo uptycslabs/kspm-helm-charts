@@ -93,3 +93,15 @@ Name identification for kubequery gatekeeper service
   name: kubequery-webhook-gatekeeper.{{ .Values.namespace }}.svc
 {{- end }}
 {{- end }}
+
+{{/*
+Service account annotation for IRSA in AWS
+*/}}
+{{- define "kubequery.sa.irsa" -}}
+{{- if (eq .Values.cloudProvider  "EKS")   }}
+{{- if (not (empty .Values.IRSA)  )}}
+  annotations:
+     eks.amazonaws.com/role-arn : {{ .Values.IRSA }}
+{{- end }}
+{{- end }}
+{{- end }}

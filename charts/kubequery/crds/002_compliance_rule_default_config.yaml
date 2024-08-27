@@ -58,7 +58,7 @@ remediation: ---
 reason: There is no Pod security policy defined
 metadata:
   name: compliance-rule-no-psp
-resnotpresentcheck: yes
+resnotpresentcheck: true
 resources:
    - apiGroups: 'policy'
      apiVersions: '*'
@@ -335,7 +335,7 @@ resources:
       - networkpolicies
 metadata:
   name: compliance-rule-network-policy
-resnotpresentcheck: yes
+resnotpresentcheck: true
 spec:
   rego: |
     package filter
@@ -359,7 +359,7 @@ resources:
       - resourcequotas
 metadata:
   name: compliance-rule-resource-quota
-resnotpresentcheck: yes
+resnotpresentcheck: true
 spec:
   rego: |
     package filter
@@ -415,7 +415,7 @@ resources:
       - limitranges
 metadata:
   name: compliance-rule-limitrange
-resnotpresentcheck: yes
+resnotpresentcheck: true
 spec:
   rego: |
     package filter
@@ -472,7 +472,7 @@ resources:
      apiVersions: "v1"
      resource:
       - clusterrolebindings
-resnotpresentcheck: yes
+resnotpresentcheck: true
 metadata:
   name: compliance-rule-rbac
 spec:

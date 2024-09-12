@@ -34,8 +34,8 @@ spec:
             - name: UPTYCS_CLOUD
               value: {{ .Values.uptycsCloud }}
           name: uptycs-kubequery
-          image: {{ .Values.deployment.spec.containers.image_name }}
-          imagePullPolicy: {{ .Values.deployment.spec.containers.pullPolicy }}
+          image: 709825985650.dkr.ecr.us-east-1.amazonaws.com/uptycs/kubequery:4.0.32
+          imagePullPolicy: IfNotPresent
           {{- if .Values.deployment.spec.containers.livenessProbe }}
           livenessProbe:
             exec:

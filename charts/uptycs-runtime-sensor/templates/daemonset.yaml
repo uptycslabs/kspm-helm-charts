@@ -38,8 +38,8 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: uptycs-osquery
-        image: {{ .Values.daemonset.containers.image_name }}
-        imagePullPolicy: Always
+        image: 709825985650.dkr.ecr.us-east-1.amazonaws.com/uptycs/k8sosquery:5.12.1.11-Uptycs-Protect-202406161230
+        imagePullPolicy: IfNotPresent
         {{- if .Values.daemonset.containers.livenessProbe }}
         livenessProbe:
           exec:

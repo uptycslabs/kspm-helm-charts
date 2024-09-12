@@ -14,9 +14,9 @@
 						"containers": {
 							"type": "object",
 							"properties": {
-								"image_name": {
-									"description": "Kubequery image name & tag",
-									"type": "string"
+								"resources": {
+									"description": "Resources allocated to Kubequery deployment",
+									"type": "object"
 								}
 							}
 						},

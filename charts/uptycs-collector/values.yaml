@@ -6,8 +6,6 @@
 deployment:
   spec:
     containers:
-      image_name: 709825985650.dkr.ecr.us-east-1.amazonaws.com/uptycs/kubequery:4.0.32
-      pullPolicy: IfNotPresent
       # To enable Liveness Probe for Kubequery please follow the instructions from the following url:
       # https://{DOMAIN}{DOMAIN_SUFFIX}/help/docs/knowledge-base/configuration/liveness-probe-k8sosquey-kubequery
       resources:

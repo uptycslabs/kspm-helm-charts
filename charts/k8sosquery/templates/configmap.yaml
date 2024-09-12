@@ -130,6 +130,7 @@ data:
     --generate_process_hash_in_process_event=false
     --generate_record_hash=true
     --host_identifier=uuid
+    --ignore_network_home_directories=true
     --include_http_headers=
     --logger_event_type=true
     --logger_path=/var/log/osquery

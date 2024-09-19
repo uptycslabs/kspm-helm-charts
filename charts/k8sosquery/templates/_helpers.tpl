@@ -72,3 +72,13 @@ Namespace identification
   namespace: {{ .Values.namespace }}
 {{- end }}
 {{- end }}
+
+{{/*
+Get K8sosquery version from image tag
+*/}}
+{{- define "k8sosquery.version" -}}
+{{- $imageTag := (split ":" .Values.daemonset.containers.image_name)._1 }}
+{{- $versionString := (split "-" $imageTag)._0 }}
+{{- $version := replace "." "" $versionString }}
+{{- $version -}}
+{{- end }}

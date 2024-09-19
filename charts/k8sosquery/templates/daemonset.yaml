@@ -89,9 +89,9 @@ spec:
           mountPropagation: {{ $v.mountPropagation }}
         {{- end }}
         {{- end }}
-        {{- $osqueryVersion := include "k8sosquery.version" . }}
-        # Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that 
-        {{- if ge (atoi $osqueryVersion) 51227 }}
+        {{- $isVersionGreater := include "k8sosquery.version" . }}
+        # Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that
+        {{- if eq $isVersionGreater "true"}}
         - mountPath: /etc/osquery/cert
         {{- else }}
         - mountPath: /etc/osquery

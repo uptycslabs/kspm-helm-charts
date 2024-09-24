@@ -1,0 +1,67 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: compliancerules.compliance.uptycs.io
+spec:
+  group: compliance.uptycs.io
+  names:
+    kind: ComplianceRule
+    listKind: ComplianceRuleList
+    plural: compliancerules
+    singular: compliancerule
+  preserveUnknownFields: false
+  scope: Cluster
+  versions:
+  - name: v1beta1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        description: Compliance Rules are the checks related to various compliance standards like NSA
+        type: object
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          complianceID:
+            description: 'compliance ID is the identifier associated with the compliance Rule'
+            type: string
+          standards:
+            description: 'standards are the compliance standards for which the rule is applicable'
+            type: string           
+          title:
+            description: 'description of compliance rule'
+            type: string              
+          remediation:
+            description: 'remediation description'
+            type: string 
+          reason:
+            description: 'additional description for the compliance rule'
+            type: string   
+          metadata:
+            type: object
+          resnotpresentcheck:
+            type: boolean
+          resources:
+            description: 'contains the resource for the compliance rule'
+            type: array 
+            items:
+              type: object
+              properties:       
+                 apiGroups:
+                   type: string
+                 apiVersions:
+                   type: string
+                 resource:
+                   type: array      
+                   items:
+                      type: string
+          spec:
+            description: RuleSpec defines the desired state of Rule.
+            type: object
+            properties:
+              rego:
+                type: string

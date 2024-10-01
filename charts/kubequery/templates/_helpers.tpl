@@ -67,8 +67,12 @@ Namespace identification
 {{- define "kubequery.namespace" -}}
 {{- if (ne .Release.Namespace  "default") }}
   namespace: {{ .Release.Namespace }}
-{{- else }} 
+{{- else }}
+  {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
+  namespace: {{ .Values.openshift.namespace.name }}
+  {{- else -}}
   namespace: {{ .Values.namespace }}
+  {{- end -}}
 {{- end }}
 {{- end }}
 
@@ -78,8 +82,12 @@ Name identification for kubequery service
 {{- define "kubequery.svc.name" -}}
 {{- if (ne .Release.Namespace  "default") }}
   name: kubequery-webhook.{{ .Release.Namespace }}.svc
-{{- else }} 
+{{- else }}
+  {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
+  name: kubequery-webhook.{{ .Values.openshift.namespace.name }}.svc
+  {{- else -}}
   name: kubequery-webhook.{{ .Values.namespace }}.svc
+  {{- end -}}
 {{- end }}
 {{- end }}
 
@@ -89,8 +97,12 @@ Name identification for kubequery gatekeeper service
 {{- define "kubequery.gk.svc.name" -}}
 {{- if (ne .Release.Namespace  "default") }}
   name: kubequery-webhook-gatekeeper.{{ .Release.Namespace }}.svc
-{{- else }} 
+{{- else }}
+  {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
+  name: kubequery-webhook-gatekeeper.{{ .Values.openshift.namespace.name }}.svc
+  {{- else -}}
   name: kubequery-webhook-gatekeeper.{{ .Values.namespace }}.svc
+  {{- end -}}
 {{- end }}
 {{- end }}
 

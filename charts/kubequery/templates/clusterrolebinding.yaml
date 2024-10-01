@@ -9,9 +9,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kubequery-sa
-    {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
-    namespace: {{ .Values.openshift.namespace.name }}
-    {{- else }}
-      {{- include "kubequery.namespace" . | indent 2  }}
-    {{- end }}
-
+    {{- include "kubequery.namespace" . }}

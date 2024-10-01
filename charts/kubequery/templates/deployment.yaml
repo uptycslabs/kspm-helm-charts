@@ -4,11 +4,7 @@ metadata:
   labels:
     app: kubequery
   name: kubequery
-  {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
-  namespace: {{ .Values.openshift.namespace.name }}
-  {{- else }}
-  {{- include "kubequery.namespace" .}}
-  {{- end }}
+  {{- include "kubequery.namespace" . }}
 spec:
   replicas: 1
   selector:
@@ -87,6 +83,8 @@ spec:
             name: eventhubsecret
             readOnly: true
           {{- end }}
+      imagePullSecrets:
+        - name: mysecret
       volumes:
       - name: config
         configMap:

@@ -31,7 +31,11 @@ supplementalGroups:
   type: RunAsAny
 seccompProfiles: []
 users:
+{{- if (ne .Release.Namespace "default") }}
+- system:serviceaccount:{{ .Release.Namespace }}:kubequery-sa
+{{- else }}
 - system:serviceaccount:{{ .Values.openshift.namespace.name }}:kubequery-sa
+{{- end }}
 volumes:
 - '*'
 {{- end }}

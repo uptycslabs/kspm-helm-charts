@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kubequery-webhook
-  {{ include "kubequery.namespace" . }}
+  {{- include "kubequery.namespace" . }}
 spec:
   ports:
     - port: 443

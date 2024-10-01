@@ -70,9 +70,9 @@ Namespace identification
 {{- else }}
   {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
   namespace: {{ .Values.openshift.namespace.name }}
-  {{- else -}}
+  {{- else }}
   namespace: {{ .Values.namespace }}
-  {{- end -}}
+  {{- end }}
 {{- end }}
 {{- end }}
 
@@ -85,9 +85,9 @@ Name identification for kubequery service
 {{- else }}
   {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
   name: kubequery-webhook.{{ .Values.openshift.namespace.name }}.svc
-  {{- else -}}
+  {{- else }}
   name: kubequery-webhook.{{ .Values.namespace }}.svc
-  {{- end -}}
+  {{- end }}
 {{- end }}
 {{- end }}
 
@@ -100,9 +100,9 @@ Name identification for kubequery gatekeeper service
 {{- else }}
   {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
   name: kubequery-webhook-gatekeeper.{{ .Values.openshift.namespace.name }}.svc
-  {{- else -}}
+  {{- else }}
   name: kubequery-webhook-gatekeeper.{{ .Values.namespace }}.svc
-  {{- end -}}
+  {{- end }}
 {{- end }}
 {{- end }}
 

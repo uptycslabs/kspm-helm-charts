@@ -18,7 +18,7 @@ data:
 kind: Secret
 metadata:
   name: webhook-server-tls
-  {{- include "kubequery.namespace" . }}
+  {{ include "kubequery.namespace" . }}
 type: kubernetes.io/tls
 ---
 {{ if and (not .Values.uptycsProtectDisabled) (not .Values.admissionControllerParameters.disable_gatekeeper_controller) -}}
@@ -36,11 +36,11 @@ webhooks:
       caBundle: {{ $caBundle }}
       service:
         name: kubequery-webhook-gatekeeper
-        {{- include "kubequery.namespace" . | indent 6}}
+        {{ include "kubequery.namespace" . }}
         path: /v1/admit
     failurePolicy: Ignore
     matchPolicy: Exact
-    {{- include "kubequery.gk.svc.name" . | indent 2 }}
+    {{ include "kubequery.gk.svc.name" . }}
     namespaceSelector:
       matchExpressions:
         - key: admission.gatekeeper.sh/ignore
@@ -72,11 +72,11 @@ webhooks:
       caBundle: {{ $caBundle }}
       service:
         name: kubequery-webhook
-        {{- include "kubequery.namespace" . | indent 6 }}
+        {{ include "kubequery.namespace" . }}
         path: /validate
     failurePolicy: Ignore
     sideEffects: None
-    {{- include "kubequery.svc.name" . | indent 2 }}
+    {{ include "kubequery.svc.name" . }}
     rules:
       - apiGroups:
           - ""

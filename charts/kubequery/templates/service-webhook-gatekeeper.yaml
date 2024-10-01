@@ -5,7 +5,7 @@ metadata:
   labels:
     gatekeeper.sh/system: "yes"
   name: kubequery-webhook-gatekeeper
-  {{- include "kubequery.namespace" . }}
+  {{ include "kubequery.namespace" . }}
 spec:
   ports:
     - name: https-webhook-server

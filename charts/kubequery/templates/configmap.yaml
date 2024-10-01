@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kubequery-config
-  {{- include "kubequery.namespace" . }}
+  {{ include "kubequery.namespace" . }}
 data:
   kubequery.flags: |-
 {{- range $key, $value := .Values.admissionControllerParameters }}

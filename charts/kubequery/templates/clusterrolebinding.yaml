@@ -9,4 +9,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kubequery-sa
-    {{- include "kubequery.namespace" . }}
+    {{ include "kubequery.namespace" . }}

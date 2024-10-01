@@ -4,7 +4,7 @@ metadata:
   labels:
     app: kubequery
   name: kubequery
-  {{- include "kubequery.namespace" . }}
+  {{ include "kubequery.namespace" . }}
 spec:
   replicas: 1
   selector:

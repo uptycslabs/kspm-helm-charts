@@ -83,8 +83,6 @@ spec:
             name: eventhubsecret
             readOnly: true
           {{- end }}
-      imagePullSecrets:
-        - name: mysecret
       volumes:
       - name: config
         configMap:

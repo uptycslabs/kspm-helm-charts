@@ -4,9 +4,14 @@
 {{ $cn = print "*.kubequery-webhook." .Release.Namespace ".svc" }}
 {{ $extnames = (list  (print "kubequery-webhook."  (toString  .Release.Namespace) ".svc")  (print "kubequery-webhook-gatekeeper."  (toString  .Release.Namespace) ".svc") "www.uptycs.com" ) }}
 {{ else }}
+{{ if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
+{{ $cn = print "*.kubequery-webhook." .Values.openshift.namespace.name ".svc" }}
+{{ $extnames = (list  (print "kubequery-webhook."  (toString  .Values.openshift.namespace.name) ".svc")  (print "kubequery-webhook-gatekeeper."  (toString  .Values.openshift.namespace.name) ".svc") "www.uptycs.com" ) }}
+{{ else }}
 {{ $cn = print "*.kubequery-webhook." .Values.namespace ".svc" }}
 {{ $extnames = (list  (print "kubequery-webhook."  (toString  .Values.namespace) ".svc")  (print "kubequery-webhook-gatekeeper."  (toString  .Values.namespace) ".svc") "www.uptycs.com" ) }}
-{{ end }} 
+{{ end }}
+{{ end }}
 {{ $ca := genCA $cn 365 }}
 {{ $cert := genSignedCert (include "kubequery.name" .)  nil $extnames 365 $ca }}
 {{ $caBundle :=  b64enc $ca.Cert   -}}
@@ -65,8 +70,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: kubequery-webhook
 webhooks:
-  -
-    admissionReviewVersions:
+  - admissionReviewVersions:
       - v1
     clientConfig:
       caBundle: {{ $caBundle }}

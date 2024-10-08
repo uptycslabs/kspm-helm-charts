@@ -77,12 +77,12 @@ Namespace identification
 Get K8sosquery version from image tag
 */}}
 {{- define "k8sosquery.version" -}}
-{{- $osqueryChangeVersion := dict "0" "5" "1" "12" "2" "2" "3" "7" }}
+{{- $osqueryChangeVersion := dict "0" 5 "1" 12 "2" 2 "3" 7 }}
 {{- $imageTag := (split ":" .Values.daemonset.containers.image_name)._1 }}
 {{- $versionString := (split "-" $imageTag)._0 }}
 {{- $versionMap := split "." $versionString }}
 {{- $isVersionGreater := false }}
-{{- if and (ge $versionMap._0 (get $osqueryChangeVersion "1")) (ge $versionMap._1 (get $osqueryChangeVersion "1")) (ge $versionMap._2 (get $osqueryChangeVersion "2")) (ge $versionMap._3 (get $osqueryChangeVersion "3")) }}
+{{- if and (ge (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (ge (atoi $versionMap._1) (get $osqueryChangeVersion "1")) (ge (atoi $versionMap._2) (get $osqueryChangeVersion "2")) (ge (atoi $versionMap._3) (get $osqueryChangeVersion "3")) }}
 {{- $isVersionGreater = true }}
 {{- end }}
 {{- $isVersionGreater -}}

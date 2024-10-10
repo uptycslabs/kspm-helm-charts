@@ -49,9 +49,6 @@ daemonset:
       mountPath: /etc/osquery/flags
     - name: secret
       mountPath: /etc/osquery/secrets
-    - mountPath: /etc/osquery
-      name: nginxsecret
-      readOnly: true
   volumes:
   - name: host
     hostPath:

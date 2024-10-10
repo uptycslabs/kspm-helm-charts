@@ -28,6 +28,8 @@ deployment:
     # This field defines the cluster name that shows up in Uptycs UI.
     hostname: _UPTYCS_CLUSTER_NAME_
     hostNetwork: false
+    # OPTIONAL: ImagePullSecrets to add to the kubequery-sa(Kubequery ServiceAccount) can be specified here.
+    imagePullSecrets:
     # Tolerations for Kubequery pod can be defined here in this section.
     # Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes.
     # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/

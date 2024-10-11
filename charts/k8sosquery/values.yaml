@@ -63,6 +63,8 @@ daemonset:
     secret:
       secretName: nginx-secret
       optional: false
+  # OPTIONAL: ImagePullSecrets to add to the uptycs-osquery(K8sosquery ServiceAccount) can be specified here.
+  imagePullSecrets:
   # Tolerations for K8sosquery pods can be defined here in this section.
   # Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes.
   # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/

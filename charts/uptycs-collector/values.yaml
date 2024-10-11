@@ -57,10 +57,3 @@ auditLogDetections:
 # Webhook CA certs bundle.
 webhook:
   caBundle: _CA_BUNDLE_
-
-# Webhook Server TLS secret is used by Kubequery admission controllers to setup the HTTPS endpoints.
-# These endpoints are then called by K8s API server during resource admission.
-# This secret contains TLS cert & key for admission controller webhooks.
-webhookServerTLS:
-  crt: __UPTYCS_WEBHOOK_SERVER_TLS_CRT__
-  key: __UPTYCS_WEBHOOK_SERVER_TLS_KEY__

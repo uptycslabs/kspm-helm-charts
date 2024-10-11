@@ -92,18 +92,6 @@
 					"type": "string"
 				}
 			}
-		},
-		"webhookServerTLS": {
-			"description": "Webhook server TLS cert & secret",
-			"type": "object",
-			"properties": {
-				"crt": {
-					"type": "string"
-				},
-				"key": {
-					"type": "string"
-				}
-			}
 		}
 	},
 	"required": [

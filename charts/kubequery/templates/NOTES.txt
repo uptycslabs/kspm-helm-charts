@@ -1,6 +1,6 @@
 Chart {{ .Chart.Name }} has been installed successfully with the following configuration:
 
-Cluster Name used for Installation: {{ include "kubequery.deployment.hostname" . }}
+Cluster Name used: {{ include "kubequery.deployment.hostname" . }}
 
 Uptycs Protect: {{- if .Values.uptycsProtectDisabled }} Disabled {{- else }} Enabled {{- end }}
 Image Admission Controller: {{- if .Values.admissionControllerParameters.disable_image_admission_controller }} Disabled {{- else }} Enabled {{- end }}

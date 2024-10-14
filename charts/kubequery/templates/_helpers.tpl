@@ -105,3 +105,18 @@ Service account annotation for IRSA in AWS
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+Hostname for Kubequery deployment container(Cluster name that shows up in Uptycs UI).
+If .Values.deployment.spec.hostname is not set, we use the following format:
+"{{UPTYCS_TENANT}}-{{EPOCH_TIMESTAMP}}"
+*/}}
+{{- define "kubequery.deployment.hostname" -}}
+{{- $uptycsTenant := .Values.uptycsCloud | replace "." "-" }}
+{{- $currentTimestamp := now | unixEpoch }}
+{{- $hostname := printf "%s-%v" $uptycsTenant $currentTimestamp }}
+{{- if and (.Values.deployment.spec.hostname) (ne .Values.deployment.spec.hostname "_UPTYCS_CLUSTER_NAME_") }}
+{{- $hostname = .Values.deployment.spec.hostname }}
+{{- end }}
+{{- $hostname -}}
+{{- end }}

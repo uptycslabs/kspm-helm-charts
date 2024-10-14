@@ -20,7 +20,8 @@ spec:
         app: kubequery
         cloudprovider: {{.Values.cloudProvider}}
     spec:
-      hostname: {{ .Values.deployment.spec.hostname }}
+      {{ $hostname := include "kubequery.deployment.hostname" . }}
+      hostname: {{ $hostname }}
       hostNetwork: {{ .Values.deployment.spec.hostNetwork }}
       securityContext:
         runAsNonRoot: true

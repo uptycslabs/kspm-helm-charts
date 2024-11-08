@@ -23,12 +23,6 @@
 						"hostname": {
 							"description": "Cluster name that shows up in Uptycs UI",
 							"type": "string"
-						},
-						"hostNetwork": {
-							"type": "boolean"
-						},
-						"tolerations": {
-							"type": "object"
 						}
 					}
 				}
@@ -73,12 +67,6 @@
 					"properties": {
 						"disable_audit": {
 							"type": "boolean"
-						},
-						"eks_log_group": {
-							"type": "string"
-						},
-						"eks_log_region": {
-							"type": "string"
 						}
 					}
 				}
@@ -100,7 +88,6 @@
 		"uptycsProtectDisabled",
 		"admissionControllerParameters",
 		"auditLogDetections",
-		"webhook",
-		"webhookServerTLS"
+		"webhook"
 	]
 }

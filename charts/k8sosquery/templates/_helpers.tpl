@@ -82,7 +82,7 @@ Get K8sosquery version from image tag
 {{- $versionString := (split "-" $imageTag)._0 }}
 {{- $versionMap := split "." $versionString }}
 {{- $isVersionGreater := false }}
-{{- if and (ge (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (ge (atoi $versionMap._1) (get $osqueryChangeVersion "1")) (ge (atoi $versionMap._2) (get $osqueryChangeVersion "2")) (ge (atoi $versionMap._3) (get $osqueryChangeVersion "3")) }}
+{{- if or (gt (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (and (eq (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (gt (atoi $versionMap._1) (get $osqueryChangeVersion "1"))) (and (eq (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (eq (atoi $versionMap._1) (get $osqueryChangeVersion "1")) (gt (atoi $versionMap._2) (get $osqueryChangeVersion "2"))) (and (eq (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (eq (atoi $versionMap._1) (get $osqueryChangeVersion "1")) (eq (atoi $versionMap._2) (get $osqueryChangeVersion "2")) (ge (atoi $versionMap._3) (get $osqueryChangeVersion "3"))) }}
 {{- $isVersionGreater = true }}
 {{- end }}
 {{- $isVersionGreater -}}

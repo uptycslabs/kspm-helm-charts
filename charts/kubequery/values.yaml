@@ -43,6 +43,9 @@ deployment:
 # Uptycs cloud service onto which the cluster is enrolled.
 uptycsCloud: _UPTYCS_CLOUD_
 
+# Agentless flag controls if agentless mode is enabled.
+isAgentless: _IS_AGENTLESS_
+
 # Uptycs protect flag controls if remediation & blocking features are enabled.
 uptycsProtectDisabled: _UPTYCS_PROTECT_DISABLED_
 

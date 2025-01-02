@@ -44,6 +44,7 @@ data:
     {{- end }}
   {{- end }}
 {{- end }}
+    --is_agentless={{ .Values.isAgentless }}
     --disable_unmanaged_cluster_audit={{ .Values.auditLogDetections.unmanaged_cluster.disable_audit }}
     --gatekeeper_audit_interval={{ .Values.admissionControllerParameters.gatekeeper_audit_interval }}
     --disable_events=false

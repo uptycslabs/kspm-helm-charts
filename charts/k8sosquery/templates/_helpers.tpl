@@ -74,16 +74,18 @@ Namespace identification
 {{- end }}
 
 {{/*
-Get K8sosquery version from image tag
+Get K8sosquery version from image tag.
+Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated.
+So this helper function is used to determine if the version present in image_tag is greater than or equal to the change version.
 */}}
 {{- define "k8sosquery.version" -}}
 {{- $osqueryChangeVersion := dict "0" 5 "1" 12 "2" 2 "3" 7 }}
 {{- $imageTag := (split ":" .Values.daemonset.containers.image_name)._1 }}
 {{- $versionString := (split "-" $imageTag)._0 }}
 {{- $versionMap := split "." $versionString }}
-{{- $isVersionGreater := false }}
-{{- if and (ge (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (ge (atoi $versionMap._1) (get $osqueryChangeVersion "1")) (ge (atoi $versionMap._2) (get $osqueryChangeVersion "2")) (ge (atoi $versionMap._3) (get $osqueryChangeVersion "3")) }}
-{{- $isVersionGreater = true }}
+{{- $isVersionGreaterOrEqual := false }}
+{{- if or (gt (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (and (eq (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (gt (atoi $versionMap._1) (get $osqueryChangeVersion "1"))) (and (eq (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (eq (atoi $versionMap._1) (get $osqueryChangeVersion "1")) (gt (atoi $versionMap._2) (get $osqueryChangeVersion "2"))) (and (eq (atoi $versionMap._0) (get $osqueryChangeVersion "0")) (eq (atoi $versionMap._1) (get $osqueryChangeVersion "1")) (eq (atoi $versionMap._2) (get $osqueryChangeVersion "2")) (ge (atoi $versionMap._3) (get $osqueryChangeVersion "3"))) }}
+{{- $isVersionGreaterOrEqual = true }}
 {{- end }}
-{{- $isVersionGreater -}}
+{{- $isVersionGreaterOrEqual -}}
 {{- end }}

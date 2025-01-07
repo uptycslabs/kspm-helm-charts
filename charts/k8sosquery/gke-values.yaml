@@ -6,6 +6,9 @@
 # Hence this file should only be used for GKE clusters.
 # For other cluster types such as AKS, EKS, OpenShift & Unmanaged please use values.yaml file.
 
+# Set to true for GKE Autopilot clusters.
+isGKEAutopilot: false
+
 # Uptycs cloud service onto which the cluster nodes are enrolled.
 uptycsCloud: _UPTYCS_CLOUD_
 

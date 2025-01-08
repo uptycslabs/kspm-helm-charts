@@ -62,8 +62,23 @@ spec:
             exec:
               command: ["/bin/sh", "-c", "mount --bind /etc/resolv.conf /host/etc/resolv.conf"]
         {{- end }}
+        {{- if eq .Values.isGKEAutopilot true }}
+        securityContext:
+          capabilities:
+            add:
+              - SYS_ADMIN
+              - BPF
+              - PERFMON
+              - PTRACE
+              - NET_ADMIN
+              - NET_RAW
+              - SYS_CHROOT
+              - FOWNER
+              - SYS_RESOURCE
+        {{- else }}
         securityContext:
           privileged: true
+        {{- end }}
         env:
         {{- range $k, $v := .Values.daemonset.containers.env }}
         - name: {{ $v.name }}

@@ -199,6 +199,16 @@ entries:
     version: 1.0.0
   kubequery:
   - apiVersion: v2
+    created: "2025-01-31T16:07:25.985413877Z"
+    description: A Helm chart for Uptycs Kubequery Agent
+    digest: 86d45304e31f57f514e9158fb1049eae3d82ff66d0dfa8e9696aaf87558f697f
+    icon: https://www.uptycs.com/hs-fs/hubfs/Logo-2.png?width=232&height=70&name=Logo-2.png
+    name: kubequery
+    type: application
+    urls:
+    - https://github.com/uptycslabs/kspm-helm-charts/releases/download/kubequery-1.2.3/kubequery-1.2.3.tgz
+    version: 1.2.3
+  - apiVersion: v2
     created: "2025-01-02T15:58:28.324568936Z"
     description: A Helm chart for Uptycs Kubequery Agent
     digest: 42ca302720b8f32b30c4cb4abe8121839294d5cbab4c2ca32fa0919de3f53cd9
@@ -378,4 +388,4 @@ entries:
     urls:
     - https://github.com/uptycslabs/kspm-helm-charts/releases/download/kubequery-1.0.0/kubequery-1.0.0.tgz
     version: 1.0.0
-generated: "2025-01-08T15:27:30.41459373Z"
+generated: "2025-01-31T16:07:25.98562966Z"

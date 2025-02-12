@@ -1,0 +1,9 @@
+{{- if .Values.isGKEAutopilot }}
+apiVersion: auto.gke.io/v1
+kind: AllowlistSynchronizer
+metadata:
+  name: uptycs-runtime-sensor-v1.0.0
+spec:
+  allowlistPaths:
+  - Uptycs/uptycs-runtime-sensor/Uptycs-uptycs-runtime-sensor-v1.0.0.yaml
+{{- end }}

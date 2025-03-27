@@ -33,7 +33,7 @@ spec:
       containers:
         - env:
             {{- $isKubeVersionGreaterOrEqual := include "kubequery.version" . }}
-            # Add "GOMEMLIMIT" and "GOGC env variables when Kubequery version is >= 5.0.6
+            # Add "GOMEMLIMIT" and "GOGC" env variables when Kubequery version is >= 5.0.6
             {{- if eq $isKubeVersionGreaterOrEqual "true"}}
             - name: GOMEMLIMIT
               value: "800"

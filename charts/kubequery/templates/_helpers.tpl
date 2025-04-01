@@ -132,3 +132,19 @@ If .Values.deployment.spec.hostname is not set, we use the following format:
 {{- end }}
 {{- $hostname -}}
 {{- end }}
+
+{{/*
+Helper function to get Kubequery version from image tag.
+We need to add "GOMEMLIMIT" and "GOGC" env variables in Kubequery Deployment spec when version is >= 5.0.6.
+*/}}
+{{- define "kubequery.version" -}}
+{{- $kubequeryMinVersion := dict "0" 5 "1" 0 "2" 6 }}
+{{- $imageTag := (split ":" .Values.deployment.spec.containers.image_name)._1 }}
+{{- $versionString := (split "-" $imageTag)._0 }}
+{{- $versionMap := split "." $versionString }}
+{{- $isKubeVersionGreaterOrEqual := false }}
+{{- if or (gt (atoi $versionMap._0) (get $kubequeryMinVersion "0")) (and (eq (atoi $versionMap._0) (get $kubequeryMinVersion "0")) (gt (atoi $versionMap._1) (get $kubequeryMinVersion "1"))) (and (eq (atoi $versionMap._0) (get $kubequeryMinVersion "0")) (eq (atoi $versionMap._1) (get $kubequeryMinVersion "1")) (ge (atoi $versionMap._2) (get $kubequeryMinVersion "2"))) }}
+{{- $isKubeVersionGreaterOrEqual = true }}
+{{- end }}
+{{- $isKubeVersionGreaterOrEqual -}}
+{{- end }}

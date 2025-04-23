@@ -36,7 +36,7 @@ spec:
             # Add "GOMEMLIMIT" and "GOGC" env variables when Kubequery version is >= 5.0.6
             {{- if eq $isKubeVersionGreaterOrEqual "true"}}
             - name: GOMEMLIMIT
-              value: "800"
+              value: "800MiB"
             - name: GOGC
               value: "50"
             {{- end }}

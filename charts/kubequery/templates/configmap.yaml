@@ -72,6 +72,6 @@ data:
     --distributed_tls_max_attempts=3
     --config_refresh=900
 {{- if eq .Values.cloudProvider "Openshift" }}
-    --disable_tables=kubernetes_crds
+    --disable-tables={{ join "," .Values.disableTables }}
 {{- end }}
   kubequery.conf: |-

@@ -49,6 +49,11 @@ isAgentless: _IS_AGENTLESS_
 # Uptycs protect flag controls if remediation & blocking features are enabled.
 uptycsProtectDisabled: _UPTYCS_PROTECT_DISABLED_
 
+# Disable kubernetes api calls for some tables potentially consuming lots of resources.
+disableTables: 
+- kubernetes_crds
+
+
 # Uptycs protect needs to be enabled to enable admission controllers.
 # Both image admission controller & gatekeeper admission controller are disabled by default.
 # Enable gatekeeper controller psp flag to install default PSPs.

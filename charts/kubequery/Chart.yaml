@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.2.7
+version: 1.2.8
 
 # Chart icon from Uptycs website https://www.uptycs.com/
 icon: https://www.uptycs.com/hs-fs/hubfs/Logo-2.png?width=232&height=70&name=Logo-2.png

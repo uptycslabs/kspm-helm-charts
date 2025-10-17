@@ -30,7 +30,7 @@ deployment:
     hostNetwork: false
     nodeSelector:
       kubernetes.io/os: linux
-    #OPTIONAL: ImagePullSecrets to add to the kubequery-sa(Kubequery ServiceAccount) can be specified here.
+    # OPTIONAL: ImagePullSecrets to add to the kubequery-sa(Kubequery ServiceAccount) can be specified here.
     imagePullSecrets:
     # Tolerations for Kubequery pod can be defined here in this section.
     # Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes.

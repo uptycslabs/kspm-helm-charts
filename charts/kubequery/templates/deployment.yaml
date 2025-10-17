@@ -19,6 +19,7 @@ spec:
       {{ $hostname := include "kubequery.deployment.hostname" . }}
       hostname: {{ $hostname }}
       hostNetwork: {{ .Values.deployment.spec.hostNetwork }}
+      nodeSelector: {{ .Values.deployment.spec.nodeSelector }} 
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

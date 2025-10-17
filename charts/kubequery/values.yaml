@@ -29,8 +29,7 @@ deployment:
     hostname: _UPTYCS_CLUSTER_NAME_
     hostNetwork: false
     nodeSelector:
-        beta.kubernetes.io/os: linux 
-       
+      beta.kubernetes.io/os: linux 
     # OPTIONAL: ImagePullSecrets to add to the kubequery-sa(Kubequery ServiceAccount) can be specified here.
     imagePullSecrets:
     # Tolerations for Kubequery pod can be defined here in this section.

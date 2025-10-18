@@ -19,10 +19,8 @@ spec:
       {{ $hostname := include "kubequery.deployment.hostname" . }}
       hostname: {{ $hostname }}
       hostNetwork: {{ .Values.deployment.spec.hostNetwork }}
-      {{- if .Values.deployment.spec.nodeSelector }}
       nodeSelector:
-      {{ toYaml .Values.deployment.spec.nodeSelector | indent 4 }}
-      {{- end }}
+        kubernetes.io/os: linux
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

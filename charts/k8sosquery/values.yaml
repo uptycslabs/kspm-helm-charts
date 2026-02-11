@@ -98,6 +98,7 @@ secrets:
   enroll_secret: __UPTYCS_SECRET__
   nginx_secret: |-
     __NGINX_SECRET__
+  createNginxSecret: true
 
 # Override the release's name.
 nameOverride: ""

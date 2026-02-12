@@ -104,6 +104,7 @@ webhookServerTLS:
 # Enroll secret contains customer identifiers & should match with allowed Uptycs infra config.
 # Nginx secret contains all the root CA's accepted by Uptycs cloud.
 secrets:
+  createNginxSecret: true
   enroll_secret: __UPTYCS_ENROLL_SECRET__
   nginx_secret: |-
     __UPTYCS_NGINX_CRT__

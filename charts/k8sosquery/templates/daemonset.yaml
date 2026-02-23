@@ -22,6 +22,9 @@ spec:
         app.kubernetes.io/part-of: Uptycs
     spec:
       serviceAccountName: uptycs-osquery
+      {{- if .Values.daemonset.priorityClassName }}
+      priorityClassName: {{ .Values.daemonset.priorityClassName }}
+      {{- end }}
       {{- with .Values.daemonset.tolerations }}
       tolerations:
       {{- toYaml . | nindent 6 }}

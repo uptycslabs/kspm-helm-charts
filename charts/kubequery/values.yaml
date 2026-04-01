@@ -30,6 +30,9 @@ deployment:
     hostNetwork: false
     # OPTIONAL: ImagePullSecrets to add to the kubequery-sa(Kubequery ServiceAccount) can be specified here.
     imagePullSecrets:
+    # Optional: name of a Kubernetes PriorityClass for the Kubequery pod.
+    # When set, the PriorityClass must exist in the cluster before installing/upgrading the chart.
+    priorityClassName:
     # Tolerations for Kubequery pod can be defined here in this section.
     # Taints and tolerations work together to ensure that pods are not scheduled onto inappropriate nodes.
     # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/

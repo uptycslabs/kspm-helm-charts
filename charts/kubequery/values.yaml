@@ -53,6 +53,10 @@ uptycsProtectDisabled: _UPTYCS_PROTECT_DISABLED_
 disableTables:
 - kubernetes_crds
 
+# Optional: Specify the compliance tag in the "key=value" format to assign to cluster during onboarding.
+# Please ensure that this tag exists in the Uptycs UI before using it.
+complianceTag:
+
 # Uptycs protect needs to be enabled to enable admission controllers.
 # Both image admission controller & gatekeeper admission controller are disabled by default.
 # Enable gatekeeper controller psp flag to install default PSPs.

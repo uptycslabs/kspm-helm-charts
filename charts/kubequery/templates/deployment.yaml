@@ -19,6 +19,9 @@ spec:
       {{ $hostname := include "kubequery.deployment.hostname" . }}
       hostname: {{ $hostname }}
       hostNetwork: {{ .Values.deployment.spec.hostNetwork }}
+      {{- if .Values.deployment.spec.priorityClassName }}
+      priorityClassName: {{ .Values.deployment.spec.priorityClassName }}
+      {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
       securityContext:

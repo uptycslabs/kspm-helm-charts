@@ -10,6 +10,13 @@ metadata:
     app.kubernetes.io/version: 1.0.0
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
+    {{- with .Values.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
 {{- if .Values.configmap.data.tags }}
   osquery.tags: |

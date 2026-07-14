@@ -5,9 +5,11 @@ kind: SecurityContextConstraints
 metadata:
   name: kubequery-sa
   annotations:
+    {{- include "kubequery.appendCommonAnnotations" . }}
     helm.sh/hook: pre-install
     helm.sh/hook-weight: "-5"
   labels:
+    {{- include "kubequery.appendCommonLabels" . }}
     app.kubernetes.io/name: kubequery-sa
     app.kubernetes.io/version: 1.0.0
     app.kubernetes.io/component: endpoint

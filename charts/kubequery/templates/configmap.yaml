@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: kubequery-config
   {{- include "kubequery.namespace" . }}
+  {{- include "kubequery.commonLabels" . }}
+  {{- include "kubequery.commonAnnotations" . }}
 data:
   kubequery.flags: |-
 {{- range $key, $value := .Values.admissionControllerParameters }}

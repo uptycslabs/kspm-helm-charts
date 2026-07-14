@@ -5,8 +5,10 @@ kind: Namespace
 metadata:
   name: {{ .Values.namespace }}
   labels:
+    {{- include "k8sosquery.appendCommonLabels" . }}
     app.kubernetes.io/name: uptycs
     app.kubernetes.io/version: 1.0.0
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
+  {{- include "k8sosquery.commonAnnotations" . }}
 {{- end }}

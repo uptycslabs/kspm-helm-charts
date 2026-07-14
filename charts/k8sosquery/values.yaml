@@ -108,6 +108,14 @@ nameOverride: ""
 # Override the release's fullname.
 fullnameOverride: ""
 
+# Labels to add to all created Kubernetes resources.
+commonLabels: {}
+
+# Annotations to add to all created Kubernetes resources.
+commonAnnotations: {}
+
+
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true

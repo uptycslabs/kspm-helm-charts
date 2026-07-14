@@ -89,3 +89,54 @@ So this helper function is used to determine if the version present in image_tag
 {{- end }}
 {{- $isVersionGreaterOrEqual -}}
 {{- end }}
+
+{{/*
+Add common labels for the chart resources specified in values
+*/}}
+{{- define "k8sosquery.commonLabels" -}}
+{{- with .Values.commonLabels }}
+  labels:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Add common labels for the chart resources specified in values
+*/}}
+{{- define "k8sosquery.commonLabelswithindent2" -}}
+{{- with .Values.commonLabels }}
+  labels:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+
+
+{{/*
+Add common annotations for the chart resources specified in values
+*/}}
+{{- define "k8sosquery.commonAnnotations" -}}
+{{- with .Values.commonAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Add common labels for the chart resources specified in values for resources 
+with existing labels
+*/}}
+{{- define "k8sosquery.appendCommonLabels" -}}
+{{- with .Values.commonLabels -}}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Add common annotations for the chart resources specified in values for resources 
+with existing annotations
+*/}}
+{{- define "k8sosquery.appendCommonAnnotations" -}}
+{{- with .Values.commonAnnotations -}}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}

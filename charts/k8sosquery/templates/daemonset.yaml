@@ -35,6 +35,10 @@ spec:
         effect: NoSchedule
       {{- end }}
       {{- end }}
+      {{- with .Values.daemonset.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
       # nodeSelector:
       #   node-role.kubernetes.io/worker: ''
       # If this daemonset should be restricted to a set of nodes, use node selector to specify the node label(s)

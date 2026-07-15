@@ -81,6 +81,20 @@ daemonset:
   #   operator: Equal
   #   value: arm64
   #   effect: NoSchedule
+  # Affinity rules for K8sosquery pods can be defined here in this section.
+  # When set, the affinity block is attached to the DaemonSet pod template.
+  # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+  # Example nodeAffinity for scheduling K8sosquery pods on linux nodes:
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: kubernetes.io/os
+  #           operator: In
+  #           values:
+  #           - linux
 
 # Configmap contains osquery flags & tags which define K8sosquery's configuration in the cluster.
 # NOTE: Please consult the Uptycs customer support before changing these configuration parameters.

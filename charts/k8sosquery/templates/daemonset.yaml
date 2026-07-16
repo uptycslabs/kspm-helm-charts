@@ -5,10 +5,12 @@ metadata:
   name: {{ .Values.daemonset.name }}
   {{- include "k8sosquery.namespace" . }}
   labels:
+    {{- include "k8sosquery.appendCommonLabels" . }}
     app.kubernetes.io/name: uptycs-osquery
     app.kubernetes.io/version: 1.0.0
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
+  {{- include "k8sosquery.commonAnnotations" . }}
 spec:
   selector:
     matchLabels:

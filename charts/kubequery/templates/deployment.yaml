@@ -2,9 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: kubequery
+    {{- include "kubequery.appendCommonLabels" . }}
+    app: kubequery   
   name: kubequery
   {{- include "kubequery.namespace" . }}
+  {{- include "kubequery.commonAnnotations" . }}
 spec:
   replicas: 1
   selector:

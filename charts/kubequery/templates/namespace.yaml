@@ -4,10 +4,12 @@ apiVersion: v1
 kind: Namespace
 metadata:
   labels:
+    {{- include "kubequery.appendCommonLabels" . }}
     app.kubernetes.io/component: cluster
     app.kubernetes.io/name: kubequery
     app.kubernetes.io/part-of: Uptycs
-    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/version: "1.0.0"     
+  {{- include "kubequery.commonAnnotations" . }}
   {{- if .Capabilities.APIVersions.Has "config.openshift.io/v1" }}
   name: {{ .Values.openshift.namespace.name }}
   {{- else }}

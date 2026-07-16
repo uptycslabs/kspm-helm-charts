@@ -148,3 +148,45 @@ We need to add "GOMEMLIMIT" and "GOGC" env variables in Kubequery Deployment spe
 {{- end }}
 {{- $isKubeVersionGreaterOrEqual -}}
 {{- end }}
+
+
+{{/*
+Add common labels for the chart resources specified in values
+*/}}
+{{- define "kubequery.commonLabels" -}}
+{{- with .Values.commonLabels }}
+  labels:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+
+{{/*
+Add common annotations for the chart resources specified in values
+*/}}
+{{- define "kubequery.commonAnnotations" -}}
+{{- with .Values.commonAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Add common labels for the chart resources specified in values for resources 
+with existing labels
+*/}}
+{{- define "kubequery.appendCommonLabels" -}}
+{{- with .Values.commonLabels -}}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Add common annotations for the chart resources specified in values for resources 
+with existing annotations
+*/}}
+{{- define "kubequery.appendCommonAnnotations" -}}
+{{- with .Values.commonAnnotations -}}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+{{- end }}

@@ -4,10 +4,12 @@ apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:
   name: uptycs-osquery-privileged
-  annotations:
+  annotations:  
+  {{- include "k8sosquery.appendCommonAnnotations" . }}
     helm.sh/hook: pre-install
     helm.sh/hook-weight: "-5"
   labels:
+    {{- include "k8sosquery.appendCommonLabels" . }}
     app.kubernetes.io/name: uptycs-osquery-privileged
     app.kubernetes.io/version: 1.0.0
     app.kubernetes.io/component: endpoint
@@ -42,3 +44,4 @@ users:
 volumes:
 - '*'
 {{- end }}
+

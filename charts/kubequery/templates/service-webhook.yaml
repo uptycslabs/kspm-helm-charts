@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: kubequery-webhook
   {{- include "kubequery.namespace" . }}
+  {{- include "kubequery.commonLabels" . }}
+  {{- include "kubequery.commonAnnotations" . }}
 spec:
   ports:
     - port: 443

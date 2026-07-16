@@ -100,16 +100,6 @@ Add common labels for the chart resources specified in values
 {{- end }}
 {{- end }}
 
-{{/*
-Add common labels for the chart resources specified in values
-*/}}
-{{- define "k8sosquery.commonLabelswithindent2" -}}
-{{- with .Values.commonLabels }}
-  labels:
-  {{- toYaml . | nindent 2 }}
-{{- end }}
-{{- end }}
-
 
 {{/*
 Add common annotations for the chart resources specified in values

@@ -65,6 +65,19 @@ daemonset:
       optional: false
   # OPTIONAL: ImagePullSecrets to add to the uptycs-osquery(K8sosquery ServiceAccount) can be specified here.
   imagePullSecrets:
+  # Deployment (update) strategy for the K8sosquery DaemonSet.
+  # When set, the updateStrategy block is attached to the DaemonSet spec, controlling how pods
+  # are replaced when the DaemonSet template changes (e.g. on an image upgrade).
+  # For more info please refer to K8s docs: https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
+  updateStrategy: {}
+  # Example RollingUpdate strategy limiting how many pods are unavailable during an update:
+  # updateStrategy:
+  #   type: RollingUpdate
+  #   rollingUpdate:
+  #     maxUnavailable: 1
+  # Example OnDelete strategy where pods are only replaced when manually deleted:
+  # updateStrategy:
+  #   type: OnDelete
   # Optional: name of a Kubernetes PriorityClass for the K8sosquery pods.
   # When set, the PriorityClass must exist in the cluster before installing/upgrading the chart.
   priorityClassName:

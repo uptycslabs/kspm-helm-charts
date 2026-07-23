@@ -12,6 +12,10 @@ metadata:
     app.kubernetes.io/part-of: Uptycs
   {{- include "k8sosquery.commonAnnotations" . }}
 spec:
+  {{- with .Values.daemonset.updateStrategy }}
+  updateStrategy:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: uptycs-osquery

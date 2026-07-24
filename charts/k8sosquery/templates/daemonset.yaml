@@ -26,6 +26,10 @@ spec:
         app.kubernetes.io/version: 1.0.0
         app.kubernetes.io/component: endpoint
         app.kubernetes.io/part-of: Uptycs
+      {{- with .Values.daemonset.podAnnotations }}
+      annotations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: uptycs-osquery
       {{- if .Values.daemonset.priorityClassName }}

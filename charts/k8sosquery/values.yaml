@@ -108,6 +108,12 @@ daemonset:
   #           operator: In
   #           values:
   #           - linux
+  # Annotations to add to the K8sosquery pods (attached to the DaemonSet pod template).
+  # Useful for things like enabling a service mesh sidecar or triggering config-reload tooling.
+  podAnnotations: {}
+  # Example:
+  # podAnnotations:
+  #   example.com/annotation-key: annotation-value
 
 # Configmap contains osquery flags & tags which define K8sosquery's configuration in the cluster.
 # NOTE: Please consult the Uptycs customer support before changing these configuration parameters.

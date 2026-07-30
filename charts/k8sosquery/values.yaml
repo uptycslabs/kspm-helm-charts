@@ -114,6 +114,13 @@ daemonset:
   # Example:
   # podAnnotations:
   #   example.com/annotation-key: annotation-value
+  # K8sosquery reads the ConfigMap (osquery flags & tags) only once, when the container starts,
+  # so editing the ConfigMap alone has no effect on already-running pods. When this is enabled a
+  # checksum of the rendered ConfigMap is added to the pod template, so any change to the ConfigMap
+  # rolls the DaemonSet and the agents pick up the new configuration.
+  # NOTE: The ConfigMap also holds the osquery flags, so a chart upgrade that changes uptycsCloud or
+  # any flag will roll the DaemonSet too. Pair this with updateStrategy below to pace the rollout.
+  restartOnConfigChange: true
 
 # Configmap contains osquery flags & tags which define K8sosquery's configuration in the cluster.
 # NOTE: Please consult the Uptycs customer support before changing these configuration parameters.

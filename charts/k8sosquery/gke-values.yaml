@@ -24,57 +24,11 @@ daemonset:
     # Image tag will decide if Uptycs protect is enabled or disabled for k8sosquery.
     image_name: uptycs/k8sosquery:_IMAGE_TAG_
     pullPolicy: IfNotPresent
-    # Probes for the K8sosquery container. Each block below is attached as-is to the container
-    # spec, so any probe handler (exec, httpGet, tcpSocket, grpc) and any probe field
-    # (initialDelaySeconds, periodSeconds, timeoutSeconds, failureThreshold, ...) is supported.
-    # All three are disabled by default.
-    # To enable a Liveness Probe for K8sosquery please follow the instructions from the following url:
+    # To enable Liveness Probe for K8sosquery please follow the instructions from the following url:
     # https://{DOMAIN}{DOMAIN_SUFFIX}/help/docs/knowledge-base/configuration/liveness-probe-k8sosquey-kubequery
-    # For more info please refer to K8s docs: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-    #
-    # Startup probe gives K8sosquery time to come up before the liveness & readiness probes
-    # start being evaluated. Prefer this over a large livenessProbe.initialDelaySeconds.
     startupProbe: {}
-    # Example exec startup probe:
-    # startupProbe:
-    #   exec:
-    #     command:
-    #     - /bin/sh
-    #     - -c
-    #     - pgrep -f "osqueryd.*--flagfile" > /dev/null
-    #   periodSeconds: 10
-    #   failureThreshold: 30
-    #
-    # Liveness probe restarts the container when the check fails. Note that PID 1 in the pod is
-    # the osquery watcher, which respawns a dead worker on its own, so a check that only looks
-    # for the watcher process will pass even when no telemetry is being collected.
     livenessProbe: {}
-    # Example exec liveness probe:
-    # livenessProbe:
-    #   exec:
-    #     command:
-    #     - /bin/sh
-    #     - -c
-    #     - pgrep -f "osqueryd.*--flagfile" > /dev/null
-    #   initialDelaySeconds: 60
-    #   periodSeconds: 60
-    #   timeoutSeconds: 10
-    #   failureThreshold: 3
-    #
-    # Readiness probe only gates the pod's Ready condition; K8sosquery serves no traffic, so this
-    # is mainly useful to make `kubectl rollout status` wait for healthy pods during an upgrade.
     readinessProbe: {}
-    # Example exec readiness probe:
-    # readinessProbe:
-    #   exec:
-    #     command:
-    #     - /bin/sh
-    #     - -c
-    #     - pgrep -f "osqueryd.*--flagfile" > /dev/null
-    #   initialDelaySeconds: 30
-    #   periodSeconds: 30
-    #   timeoutSeconds: 10
-    #   failureThreshold: 3
     env:
     - name: CHROOT_DIR
       value: /host

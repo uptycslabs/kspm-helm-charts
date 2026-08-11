@@ -71,13 +71,10 @@ spec:
               name: webhook-api
             - containerPort: 8444
               name: gk-webhook-api
+          {{- with .Values.deployment.spec.containers.resources }}
           resources:
-            limits:
-              cpu: {{ .Values.deployment.spec.containers.resources.limits.cpu }}
-              memory: {{ .Values.deployment.spec.containers.resources.limits.memory }}
-            requests:
-              cpu: {{ .Values.deployment.spec.containers.resources.requests.cpu }}
-              memory: {{ .Values.deployment.spec.containers.resources.requests.memory }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
           - name: config
             mountPath: /opt/uptycs/config

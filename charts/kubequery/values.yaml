@@ -18,6 +18,9 @@ deployment:
       pullPolicy: IfNotPresent
       # To enable Liveness Probe for Kubequery please follow the instructions from the following url:
       # https://{DOMAIN}{DOMAIN_SUFFIX}/help/docs/knowledge-base/configuration/liveness-probe-k8sosquey-kubequery
+      # The whole map is passed through to the container, so any resource the node
+      # exposes can be set here, not just cpu and memory -- for example
+      # ephemeral-storage, or an extended resource.
       resources:
         limits:
           cpu: 1000m

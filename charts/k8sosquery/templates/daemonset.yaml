@@ -103,13 +103,10 @@ spec:
         - name: {{ $v.name }}
           value: {{ $v.value }}
         {{- end}}
+        {{- with .Values.daemonset.containers.resources }}
         resources:
-          limits:
-            cpu: {{ .Values.daemonset.containers.resources.limits.cpu }}
-            memory: {{ .Values.daemonset.containers.resources.limits.memory }}
-          requests:
-            cpu: {{ .Values.daemonset.containers.resources.requests.cpu }}
-            memory: {{ .Values.daemonset.containers.resources.requests.memory }}
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
         volumeMounts: 
         {{- range $k, $v := .Values.daemonset.containers.volumeMounts }}
         - name: {{ $v.name }}

@@ -38,6 +38,9 @@ daemonset:
       value: /home/kubernetes/bin
     # Resources specify the default values for CPU & memory settings for K8sosquery.
     # These can be changed based on the number of containers running in each node of the cluster.
+    # The whole map is passed through to the container, so any resource the node
+    # exposes can be set here, not just cpu and memory -- for example
+    # ephemeral-storage, or an extended resource.
     resources:
       limits:
         cpu: 1000m

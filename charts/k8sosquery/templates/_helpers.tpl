@@ -122,7 +122,7 @@ with existing labels
 {{- end }}
 
 {{/*
-Add common annotations for the chart resources specified in values for resources 
+Add common annotations for the chart resources specified in values for resources
 with existing annotations
 */}}
 {{- define "k8sosquery.appendCommonAnnotations" -}}
@@ -130,3 +130,19 @@ with existing annotations
 {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- end }}
+
+{{/*
+Effective pod affinity for a DaemonSet: whatever the (merged) ds.affinity sets, plus a
+required one-per-node podAntiAffinity keyed on app.kubernetes.io/name. Guarantees at most one
+uptycs agent per node. Input: the effective ds map. Output: affinity YAML (always non-empty).
+*/}}
+{{- define "k8sosquery.mergedAffinity" -}}
+{{- $affinity := deepCopy (.affinity | default dict) -}}
+{{- $selfRule := dict "labelSelector" (dict "matchExpressions" (list (dict "key" "app.kubernetes.io/name" "operator" "In" "values" (list "uptycs-osquery")))) "topologyKey" "kubernetes.io/hostname" -}}
+{{- $paa := get $affinity "podAntiAffinity" | default dict -}}
+{{- $required := get $paa "requiredDuringSchedulingIgnoredDuringExecution" | default (list) -}}
+{{- $required = append $required $selfRule -}}
+{{- $_ := set $paa "requiredDuringSchedulingIgnoredDuringExecution" $required -}}
+{{- $_ := set $affinity "podAntiAffinity" $paa -}}
+{{- toYaml $affinity -}}
+{{- end -}}

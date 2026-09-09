@@ -1,0 +1,4 @@
+daemonset:
+  variants:
+    - { name: a }
+    - { name: a }

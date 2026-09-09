@@ -114,6 +114,36 @@ daemonset:
   #           operator: In
   #           values:
   #           - linux
+  # Per-node-pool resource tiers. When empty, a single DaemonSet is rendered from the settings
+  # above (unchanged behavior). When non-empty, one DaemonSet is rendered PER entry and NO default
+  # DaemonSet is rendered - a catch-all for "all other nodes" must itself be a variant. Each entry
+  # deep-merges over the settings above and may override name, nodeSelector/affinity/tolerations,
+  # and containers.resources. Every pod always gets a required one-per-node podAntiAffinity, so two
+  # agents never run on the same node; operators must still make variants mutually exclusive (via
+  # nodeSelector/affinity) so the RIGHT tier lands on each node. See the chart README.
+  # CAVEAT: a resource variant should spell out the full limits and requests (both cpu and memory)
+  # -- unspecified sub-keys (e.g. limits.cpu) are inherited from the base, which can leave a raised
+  # memory limit paired with a CPU limit still sized for the base tier. Also, map fields deep-merge
+  # key-by-key but list fields (tolerations/env/volumes) are replaced wholesale, not merged.
+  variants: []
+  # variants:
+  #   - name: high-memory
+  #     nodeSelector: { node-pool: high-memory }
+  #     tolerations:
+  #       - { key: dedicated, value: high-memory, effect: NoSchedule }
+  #     containers:
+  #       resources:
+  #         limits: { memory: 1Gi }
+  #         requests: { cpu: 200m, memory: 256Mi }
+  #   - name: default
+  #     affinity:
+  #       nodeAffinity:
+  #         requiredDuringSchedulingIgnoredDuringExecution:
+  #           nodeSelectorTerms:
+  #             - matchExpressions:
+  #                 - { key: node-pool, operator: NotIn, values: [high-memory] }
+  #     containers:
+  #       resources: { limits: { memory: 256Mi }, requests: { cpu: 200m, memory: 100Mi } }
   # Annotations to add to the K8sosquery pods (attached to the DaemonSet pod template).
   # Useful for things like enabling a service mesh sidecar or triggering config-reload tooling.
   podAnnotations: {}

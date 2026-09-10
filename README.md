@@ -70,3 +70,88 @@ kubectl get po -n <custom-k8sosquery-namespace>
 ```console
 kubectl get po -n <custom-kubequery-namespace>
 ```
+
+## Per-node-pool resource tiers (k8sosquery DaemonSet variants)
+
+By default the `k8sosquery` chart renders one DaemonSet (from `daemonset`) and one ConfigMap
+(from `configmap`) for the whole fleet, so every node gets the same resources and the same osquery
+flags/tags. To give different node classes different resources, or a different tag profile (e.g.
+more memory and a distinct tag on large data-plane nodes), set the top-level `variants` - a list
+where **each entry renders its own DaemonSet**. When it is non-empty, the single default DaemonSet
+is **not** rendered; express a "catch-all" as its own variant.
+
+Each entry is `{ name, daemonset?, configmap? }`:
+
+- `name` (required, unique) identifies the variant; it is appended to resource names
+  (`uptycs-osquery-<name>`) and set as the `uptycs.io/variant` label.
+- `daemonset` (optional) deep-merges over the top-level `daemonset` settings - typically scheduling
+  (`nodeSelector` / `affinity` / `tolerations`) and `containers.resources`.
+- Each variant always gets **its own ConfigMap** (1-to-1 with its DaemonSet), named
+  `<configmap.name>-<variant name>` (e.g. `uptycs-config-high-memory`), which that variant's
+  DaemonSet mounts. When `variants` is set the base `configmap.name` ConfigMap is **not** rendered;
+  every variant's ConfigMap starts from the top-level `configmap.data` settings.
+- `configmap` (optional) deep-merges over the top-level `configmap.data` for this variant. A
+  variant that omits `configmap` still gets its own ConfigMap carrying the base config data
+  unchanged. A variant's `configmap.data.tags` fully replaces the base tags, so restate the full
+  set of tags you want for that variant - distinct tags let the Uptycs console vend a distinct
+  osquery flag profile per variant.
+
+Two merge caveats:
+
+- **Resource variants should be self-contained.** The merge is key-by-key, so a variant that sets
+  only `daemonset.containers.resources.limits.memory` inherits the base `limits.cpu` - spell out the
+  full `limits` and `requests` in a resource variant, or you can end up with a mismatched limit
+  (e.g. a raised memory limit paired with a CPU limit still sized for the base tier). To **drop** an
+  inherited value entirely, set it to `null` (e.g. `limits: { cpu: null }`), which removes the key -
+  the same null-delete convention Helm applies to a values-layer override.
+- **Lists replace, they don't merge.** Map fields deep-merge key-by-key, but list-valued fields
+  (`tolerations`, `env`, `volumes`) are replaced wholesale by the variant's list - restate any base
+  list entries (e.g. the default master/control-plane tolerations) you want to keep.
+
+Two invariants:
+
+- **At most one agent per node - enforced.** Every pod gets a required one-per-node
+  `podAntiAffinity` (on `app.kubernetes.io/name`, hostname topology), so two agents can never run
+  on the same node. During a single-DaemonSet -> variants migration this makes the cutover a
+  per-node hand-off (new pods stay `Pending` until the old drain) rather than a two-agent overlap.
+- **The right tier on the right node - your job.** Anti-affinity guarantees "not two", not "the
+  correct one". If two variants can match a node, which wins is nondeterministic and the loser
+  stays `Pending`. So with two or more variants **each variant's `daemonset` must scope its nodes**
+  to a disjoint set - either via `nodeSelector`/`affinity` (a catch-all positively excludes the
+  specialized pools, e.g. `nodeAffinity ... NotIn [...]`; exclusion keys off node **labels**), or
+  via `tolerations` when the pools are carved into **mutually exclusive taints** and each variant
+  tolerates only its own pool's taint. The chart **enforces** that each variant sets at least one
+  of `nodeSelector` / `affinity` / `tolerations` when there are 2+ variants; it cannot verify the
+  scopes are actually disjoint, so a wrong scope still falls back to the anti-affinity backstop.
+
+Example:
+
+    variants:
+      - name: high-memory
+        daemonset:
+          nodeSelector: { node-pool: high-memory }
+          tolerations:
+            - { key: dedicated, value: high-memory, effect: NoSchedule }
+          containers:
+            resources: { limits: { memory: 1Gi }, requests: { cpu: 200m, memory: 256Mi } }
+        configmap:
+          data:
+            tags: role/high-memory
+      - name: default
+        daemonset:
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - { key: node-pool, operator: NotIn, values: [high-memory] }
+          containers:
+            resources: { limits: { memory: 256Mi }, requests: { cpu: 200m, memory: 100Mi } }
+
+This renders DaemonSets `uptycs-osquery-high-memory` and `uptycs-osquery-default`, each carrying a
+`uptycs.io/variant` label; `uptycs-osquery-high-memory` mounts its own ConfigMap
+(`uptycs-config-high-memory`, carrying the `role/high-memory` tag) and `uptycs-osquery-default`
+mounts its own `uptycs-config-default` (base config data); the base `uptycs-config` is not rendered. Migrating an existing install from the single
+DaemonSet to variants replaces the DaemonSet object (old `uptycs-osquery` removed,
+`uptycs-osquery-<variant>` created); thanks to the anti-affinity the agent pods roll over per node
+with a brief gap, not an overlap.

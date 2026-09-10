@@ -133,6 +133,61 @@ configmap:
     # local_proxy: <proxy_name>.<proxy_namespace>.svc.cluster.local
     local_proxy:
 
+# Per-node-pool resource tiers (variants). When empty, a single DaemonSet (from `daemonset`) and a
+# single ConfigMap (from `configmap`) are rendered - unchanged behavior. When non-empty, one
+# DaemonSet AND one ConfigMap are rendered PER entry (1-to-1) and the base DaemonSet/ConfigMap are
+# NOT rendered - a catch-all for "all other nodes" must itself be a variant.
+#
+# Each entry is { name, daemonset?, configmap? }:
+#   - name: required, unique.
+#   - daemonset: optional; deep-merged over the top-level `daemonset` settings above (e.g.
+#     nodeSelector/affinity/tolerations, containers.resources). Every pod always gets a required
+#     one-per-node podAntiAffinity, so two agents never run on the same node. With two or more
+#     variants, each variant's daemonset must scope its own nodes to a disjoint set via
+#     nodeSelector/affinity, or via tolerations when pools are carved into mutually-exclusive
+#     taints. The chart FAILS the render if a variant sets none of nodeSelector/affinity/tolerations
+#     when there are 2+ variants (it cannot verify true disjointness). See the chart README.
+#   - configmap: optional; deep-merged over the top-level `configmap.data` for this variant.
+#     Each variant always gets its OWN ConfigMap (1-to-1 with its DaemonSet), named
+#     `<configmap.name>-<variant name>`, which that variant's DaemonSet mounts; when `variants`
+#     is set the base ConfigMap is NOT rendered. A variant that omits `configmap` still gets its
+#     own ConfigMap carrying the base config data. A variant's `configmap.data.tags` fully
+#     replaces the base tags - restate the full set. Distinct tags let the Uptycs console vend a
+#     distinct osquery flag profile per variant.
+#
+# CAVEATS:
+# - A resource variant should spell out the full limits and requests (both cpu and memory) --
+#   unspecified sub-keys (e.g. limits.cpu) are inherited from the base, which can leave a raised
+#   memory limit paired with a CPU limit still sized for the base tier.
+# - To DROP an inherited value, set it to null (e.g. limits: { cpu: null }) -- the key is removed,
+#   the same null-delete convention Helm applies to a values-layer override.
+# - Map fields deep-merge key-by-key but list fields (tolerations/env/volumes) are replaced
+#   wholesale, not merged.
+variants: []
+# variants:
+#   - name: high-memory
+#     daemonset:
+#       nodeSelector: { node-pool: high-memory }
+#       tolerations:
+#         - { key: dedicated, value: high-memory, effect: NoSchedule }
+#       containers:
+#         resources:
+#           limits: { memory: 1Gi }
+#           requests: { cpu: 200m, memory: 256Mi }
+#     configmap:
+#       data:
+#         tags: role/high-memory
+#   - name: default
+#     daemonset:
+#       affinity:
+#         nodeAffinity:
+#           requiredDuringSchedulingIgnoredDuringExecution:
+#             nodeSelectorTerms:
+#               - matchExpressions:
+#                   - { key: node-pool, operator: NotIn, values: [high-memory] }
+#       containers:
+#         resources: { limits: { memory: 256Mi }, requests: { cpu: 200m, memory: 100Mi } }
+
 # Uptycs enroll secret & nginx certs are stack specific & are required to communitcate with Uptycs cloud service.
 # Enroll secret contains customer identifiers & should match with allowed Uptycs infra config.
 # Nginx secret contains all the root CA's accepted by Uptycs cloud.

@@ -1,4 +1,3 @@
-daemonset:
-  variants:
-    - { name: a }
-    - { name: a }
+variants:
+  - { name: a }
+  - { name: a }

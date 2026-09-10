@@ -1,16 +1,22 @@
-{{- $variants := .Values.daemonset.variants }}
-{{- if not $variants }}
-{{- $variants = list (dict "name" "") }}
-{{- end }}
-{{- $base := omit .Values.daemonset "variants" }}
+{{- $variants := .Values.variants | default (list (dict "name" "")) }}
 {{- $seen := list }}
-{{- range $v := .Values.daemonset.variants }}
-{{-   if not $v.name }}{{ fail "daemonset.variants: every variant must set a non-empty 'name'" }}{{ end }}
-{{-   if has $v.name $seen }}{{ fail (printf "daemonset.variants: duplicate variant name %q" $v.name) }}{{ end }}
+{{- range $v := .Values.variants }}
+{{-   if not $v.name }}{{ fail "variants: every variant must set a non-empty 'name'" }}{{ end }}
+{{-   if has $v.name $seen }}{{ fail (printf "variants: duplicate variant name %q" $v.name) }}{{ end }}
 {{-   $seen = append $seen $v.name }}
 {{- end }}
+{{- if gt (len .Values.variants) 1 }}
+{{-   range $v := .Values.variants }}
+{{-     $sched := $v.daemonset | default dict }}
+{{-     if not (or $sched.nodeSelector $sched.affinity $sched.tolerations) }}
+{{-       fail (printf "variants: with 2+ variants, variant %q must set daemonset.nodeSelector, daemonset.affinity, or daemonset.tolerations to scope its nodes (variants must target disjoint node sets; see README)" $v.name) }}
+{{-     end }}
+{{-   end }}
+{{- end }}
 {{- range $v := $variants }}
-{{- $ds := mergeOverwrite (deepCopy $base) (omit $v "name") }}
+{{- $ds := mergeOverwrite (deepCopy $.Values.daemonset) ($v.daemonset | default dict) }}
+{{- $ds = include "k8sosquery.compact" $ds | fromYaml }}
+{{- $cmName := include "k8sosquery.configmapName" (dict "root" $ "variant" $v) }}
 ---
-{{ include "k8sosquery.daemonset" (dict "root" $ "ds" $ds "variant" ($v.name | default "")) }}
+{{ include "k8sosquery.daemonset" (dict "root" $ "ds" $ds "variant" ($v.name | default "") "configmapName" $cmName) }}
 {{- end }}

@@ -146,3 +146,35 @@ uptycs agent per node. Input: the effective ds map. Output: affinity YAML (alway
 {{- $_ := set $affinity "podAntiAffinity" $paa -}}
 {{- toYaml $affinity -}}
 {{- end -}}
+
+{{/*
+Effective ConfigMap name for a variant: <base>-<variant> when the variant overrides the
+configmap, else the shared base name. Input: dict "root" <$> "variant" <variant map or nil>.
+*/}}
+{{- define "k8sosquery.configmapName" -}}
+{{- $base := .root.Values.configmap.name -}}
+{{- if and .variant .variant.name -}}
+{{- printf "%s-%s" $base .variant.name -}}
+{{- else -}}
+{{- $base -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Recursively drop map keys whose value is null, then emit the map as YAML. Used after a variant
+deep-merge so a variant override of `key: null` UNSETS the key - matching Helm's own values-layer
+coalescing (a null in an override deletes the key) rather than leaving a literal `null` in the
+manifest. Recurses into nested maps; lists are left as-is (variants replace lists wholesale).
+Round-trip the result with `fromYaml` to get a map back. Input: a map (`.`).
+*/}}
+{{- define "k8sosquery.compact" -}}
+{{- $out := dict -}}
+{{- range $k, $v := . -}}
+{{-   if kindIs "map" $v -}}
+{{-     $_ := set $out $k (include "k8sosquery.compact" $v | fromYaml) -}}
+{{-   else if not (kindIs "invalid" $v) -}}
+{{-     $_ := set $out $k $v -}}
+{{-   end -}}
+{{- end -}}
+{{- $out | toYaml -}}
+{{- end -}}

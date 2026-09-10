@@ -161,5 +161,5 @@ spec:
       {{- end }}
       - name: config
         configMap:
-          name: {{ $root.Values.configmap.name }}
+          name: {{ .configmapName | default $root.Values.configmap.name }}
 {{- end -}}

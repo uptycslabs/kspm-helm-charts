@@ -1,0 +1,8 @@
+daemonset:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: topology.kubernetes.io/zone
+          labelSelector:
+            matchExpressions:
+              - { key: app.kubernetes.io/component, operator: In, values: [endpoint] }

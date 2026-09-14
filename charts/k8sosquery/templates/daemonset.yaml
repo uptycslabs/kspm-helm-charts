@@ -1,149 +1,22 @@
-# Create Uptycs Osquery daemonset
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: {{ .Values.daemonset.name }}
-  {{- include "k8sosquery.namespace" . }}
-  labels:
-    {{- include "k8sosquery.appendCommonLabels" . }}
-    app.kubernetes.io/name: uptycs-osquery
-    app.kubernetes.io/version: 1.0.0
-    app.kubernetes.io/component: endpoint
-    app.kubernetes.io/part-of: Uptycs
-  {{- include "k8sosquery.commonAnnotations" . }}
-spec:
-  {{- with .Values.daemonset.updateStrategy }}
-  updateStrategy:
-  {{- toYaml . | nindent 4 }}
-  {{- end }}
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: uptycs-osquery
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: uptycs-osquery
-        app.kubernetes.io/version: 1.0.0
-        app.kubernetes.io/component: endpoint
-        app.kubernetes.io/part-of: Uptycs
-      {{- with .Values.daemonset.podAnnotations }}
-      annotations:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
-    spec:
-      serviceAccountName: uptycs-osquery
-      {{- if .Values.daemonset.priorityClassName }}
-      priorityClassName: {{ .Values.daemonset.priorityClassName }}
-      {{- end }}
-      {{- with .Values.daemonset.tolerations }}
-      tolerations:
-      {{- toYaml . | nindent 6 }}
-      {{- if $.Capabilities.APIVersions.Has "config.openshift.io/v1" }}
-      - key: node-role.kubernetes.io/infra
-        effect: NoSchedule
-      {{- end }}
-      {{- end }}
-      {{- with .Values.daemonset.affinity }}
-      affinity:
-      {{- toYaml . | nindent 8 }}
-      {{- end }}
-      # nodeSelector:
-      #   node-role.kubernetes.io/worker: ''
-      # If this daemonset should be restricted to a set of nodes, use node selector to specify the node label(s)
-      # nodeSelector:
-      #  app: uptycs-osquery
-      hostPID: true
-      hostIPC: true
-      hostNetwork: true
-      {{- if .Values.daemonset.dnsPolicy }}
-      dnsPolicy: {{ .Values.daemonset.dnsPolicy }}
-      {{- end }}
-      terminationGracePeriodSeconds: 30
-      containers:
-      - name: {{ .Values.daemonset.containers.name }}
-        image: {{ .Values.daemonset.containers.image_name }}
-        imagePullPolicy: {{ .Values.daemonset.containers.pullPolicy }}
-        {{- with .Values.daemonset.containers.startupProbe }}
-        startupProbe:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- with .Values.daemonset.containers.livenessProbe }}
-        livenessProbe:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- with .Values.daemonset.containers.readinessProbe }}
-        readinessProbe:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- if eq .Values.daemonset.dnsPolicy "ClusterFirstWithHostNet" }}
-        lifecycle:
-          postStart:
-            exec:
-              command: ["/bin/sh", "-c", "mount --bind /etc/resolv.conf /host/etc/resolv.conf"]
-        {{- end }}
-        {{- if eq .Values.isGKEAutopilot true }}
-        securityContext:
-          capabilities:
-            add:
-              - SYS_ADMIN
-              - BPF
-              - PERFMON
-              - PTRACE
-              - NET_ADMIN
-              - NET_RAW
-              - SYS_CHROOT
-              - FOWNER
-              - SYS_RESOURCE
-        {{- else }}
-        securityContext:
-          privileged: true
-        {{- end }}
-        env:
-        {{- range $k, $v := .Values.daemonset.containers.env }}
-        - name: {{ $v.name }}
-          value: {{ $v.value }}
-        {{- end}}
-        {{- with .Values.daemonset.containers.resources }}
-        resources:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        volumeMounts: 
-        {{- range $k, $v := .Values.daemonset.containers.volumeMounts }}
-        - name: {{ $v.name }}
-        {{- if hasKey $v "mountPath" }}
-          mountPath: {{ $v.mountPath }}
-        {{- end }}
-        {{- if hasKey $v "readOnly" }}
-          readOnly: {{ $v.readOnly }}
-        {{- end}}
-        {{- if hasKey $v "mountPropagation" }}
-          mountPropagation: {{ $v.mountPropagation }}
-        {{- end }}
-        {{- end }}
-        {{- $isVersionGreaterOrEqual := include "k8sosquery.version" . }}
-        # Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that
-        {{- if eq $isVersionGreaterOrEqual "true"}}
-        - mountPath: /etc/osquery/cert
-        {{- else }}
-        - mountPath: /etc/osquery
-        {{- end }}
-          name: nginxsecret
-          readOnly: true
-      volumes: 
-      {{- range $k, $v := .Values.daemonset.volumes }}
-      - name: {{ $v.name }}
-      {{- if hasKey $v "hostPath" }}
-        hostPath:
-          path: {{ $v.hostPath.path }}
-      {{- end }}
-      {{- if hasKey $v "secret" }}
-        secret:
-          secretName: {{ $v.secret.secretName }}
-          {{- if  hasKey $v.secret "optional"}}
-          optional: {{ $v.secret.optional }}
-          {{- end }}
-      {{- end }}
-      {{- end }}
-      - name: config
-        configMap:
-          name: {{ .Values.configmap.name }}
+{{- $variants := .Values.variants | default (list (dict "name" "")) }}
+{{- $seen := list }}
+{{- range $v := .Values.variants }}
+{{-   if not $v.name }}{{ fail "variants: every variant must set a non-empty 'name'" }}{{ end }}
+{{-   if has $v.name $seen }}{{ fail (printf "variants: duplicate variant name %q" $v.name) }}{{ end }}
+{{-   $seen = append $seen $v.name }}
+{{- end }}
+{{- if gt (len .Values.variants) 1 }}
+{{-   range $v := .Values.variants }}
+{{-     $sched := $v.daemonset | default dict }}
+{{-     if not (or $sched.nodeSelector $sched.affinity $sched.tolerations) }}
+{{-       fail (printf "variants: with 2+ variants, variant %q must set daemonset.nodeSelector, daemonset.affinity, or daemonset.tolerations to scope its nodes (variants must target disjoint node sets; see README)" $v.name) }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+{{- range $v := $variants }}
+{{- $ds := mergeOverwrite (deepCopy $.Values.daemonset) ($v.daemonset | default dict) }}
+{{- $ds = include "k8sosquery.compact" $ds | fromYaml }}
+{{- $cmName := include "k8sosquery.configmapName" (dict "root" $ "variant" $v) }}
+---
+{{ include "k8sosquery.daemonset" (dict "root" $ "ds" $ds "variant" ($v.name | default "") "configmapName" $cmName) }}
+{{- end }}

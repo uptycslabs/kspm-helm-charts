@@ -1,0 +1,10 @@
+# 2 variants where one (a) has a daemonset override but NO scheduling scope -> must fail.
+variants:
+  - name: a
+    daemonset:
+      containers:
+        resources:
+          limits: { memory: 1Gi }
+  - name: b
+    daemonset:
+      nodeSelector: { node-pool: b }

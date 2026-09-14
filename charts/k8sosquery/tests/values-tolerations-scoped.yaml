@@ -1,0 +1,11 @@
+# 2 variants scoped ONLY by mutually-exclusive tolerations (dedicated tainted pools).
+# The guard must accept this (tolerations count as a scoping mechanism).
+variants:
+  - name: x
+    daemonset:
+      tolerations:
+        - { key: tier, value: x, effect: NoSchedule }
+  - name: y
+    daemonset:
+      tolerations:
+        - { key: tier, value: y, effect: NoSchedule }

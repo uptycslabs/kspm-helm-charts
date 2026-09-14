@@ -122,7 +122,7 @@ with existing labels
 {{- end }}
 
 {{/*
-Add common annotations for the chart resources specified in values for resources 
+Add common annotations for the chart resources specified in values for resources
 with existing annotations
 */}}
 {{- define "k8sosquery.appendCommonAnnotations" -}}
@@ -130,3 +130,51 @@ with existing annotations
 {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- end }}
+
+{{/*
+Effective pod affinity for a DaemonSet: whatever the (merged) ds.affinity sets, plus a
+required one-per-node podAntiAffinity keyed on app.kubernetes.io/name. Guarantees at most one
+uptycs agent per node. Input: the effective ds map. Output: affinity YAML (always non-empty).
+*/}}
+{{- define "k8sosquery.mergedAffinity" -}}
+{{- $affinity := deepCopy (.affinity | default dict) -}}
+{{- $selfRule := dict "labelSelector" (dict "matchExpressions" (list (dict "key" "app.kubernetes.io/name" "operator" "In" "values" (list "uptycs-osquery")))) "topologyKey" "kubernetes.io/hostname" -}}
+{{- $paa := get $affinity "podAntiAffinity" | default dict -}}
+{{- $required := get $paa "requiredDuringSchedulingIgnoredDuringExecution" | default (list) -}}
+{{- $required = append $required $selfRule -}}
+{{- $_ := set $paa "requiredDuringSchedulingIgnoredDuringExecution" $required -}}
+{{- $_ := set $affinity "podAntiAffinity" $paa -}}
+{{- toYaml $affinity -}}
+{{- end -}}
+
+{{/*
+Effective ConfigMap name for a variant: <base>-<variant> when the variant overrides the
+configmap, else the shared base name. Input: dict "root" <$> "variant" <variant map or nil>.
+*/}}
+{{- define "k8sosquery.configmapName" -}}
+{{- $base := .root.Values.configmap.name -}}
+{{- if and .variant .variant.name -}}
+{{- printf "%s-%s" $base .variant.name -}}
+{{- else -}}
+{{- $base -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Recursively drop map keys whose value is null, then emit the map as YAML. Used after a variant
+deep-merge so a variant override of `key: null` UNSETS the key - matching Helm's own values-layer
+coalescing (a null in an override deletes the key) rather than leaving a literal `null` in the
+manifest. Recurses into nested maps; lists are left as-is (variants replace lists wholesale).
+Round-trip the result with `fromYaml` to get a map back. Input: a map (`.`).
+*/}}
+{{- define "k8sosquery.compact" -}}
+{{- $out := dict -}}
+{{- range $k, $v := . -}}
+{{-   if kindIs "map" $v -}}
+{{-     $_ := set $out $k (include "k8sosquery.compact" $v | fromYaml) -}}
+{{-   else if not (kindIs "invalid" $v) -}}
+{{-     $_ := set $out $k $v -}}
+{{-   end -}}
+{{- end -}}
+{{- $out | toYaml -}}
+{{- end -}}

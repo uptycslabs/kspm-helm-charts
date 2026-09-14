@@ -1,0 +1,13 @@
+# Base sets a cpu limit; a variant unsets it with `cpu: null` (should render with NO cpu limit,
+# matching Helm's values-layer null-delete). Single variant so the 2+-variant scoping guard is off.
+daemonset:
+  containers:
+    resources:
+      limits: { cpu: 1000m, memory: 500Mi }
+      requests: { cpu: 200m, memory: 100Mi }
+variants:
+  - name: nolimit
+    daemonset:
+      containers:
+        resources:
+          limits: { memory: 1Gi, cpu: null }

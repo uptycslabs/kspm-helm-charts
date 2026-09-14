@@ -114,6 +114,44 @@ daemonset:
   #           operator: In
   #           values:
   #           - linux
+  # Node selector for K8sosquery pods can be defined here in this section to restrict pods to a
+  # subset of nodes matching the given label(s). Leave empty to run on every node the
+  # tolerations/affinity above allow.
+  # This can be any node label, not just instance type - a built-in label (e.g.
+  # topology.kubernetes.io/zone), or a custom one you apply yourself (e.g. via
+  # `kubectl label node <node> <key>=<value>`). Note that a cloud provider "tag" only works here
+  # if something actually syncs it onto the Node object as a label; console/billing tags alone
+  # are not visible to Kubernetes.
+  # nodeSelector:
+  #   node.kubernetes.io/instance-type: c5.4xlarge
+  nodeSelector: {}
+  # Optional override for a labeled subset of nodes (e.g. a node pool with more CPU/memory
+  # available) that should run K8sosquery with different `resources` than the rest of the
+  # cluster. Kubernetes DaemonSets apply one identical pod template to every node they schedule
+  # onto, so when this is enabled the chart renders a SECOND DaemonSet (named
+  # "<daemonset.name>-override") restricted to the nodes matched by `override.nodeSelector`, and
+  # automatically excludes those same nodes from the default DaemonSet above (via a generated
+  # node anti-affinity) so each node only ever runs one K8sosquery pod.
+  # Leave `override.nodeSelector` empty (the default) to disable this feature entirely.
+  # NOTE: If you also set a custom `daemonset.affinity` above, the automatic node exclusion is
+  # skipped -- you are then responsible for excluding the `override.nodeSelector` nodes yourself
+  # from within your own `daemonset.affinity`.
+  override:
+    # Node label(s) that select the subset of nodes that should use `override.resources` instead
+    # of the default `containers.resources` above. Example: give t2.large nodes higher limits
+    # while every other node (e.g. t3.medium) keeps using containers.resources above.
+    # As with daemonset.nodeSelector above, any node label/tag works here (built-in or one you
+    # apply yourself) - it isn't limited to instance type. If you list more than one key, ALL of
+    # them must match for a node to get `override.resources`; a node failing even one of them
+    # falls back to the default DaemonSet.
+    nodeSelector:
+      node.kubernetes.io/instance-type: t2.large
+    # Resources for the matched subset of nodes. Any field not set here falls back to the
+    # corresponding field in `containers.resources` above (partial overrides are supported).
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 512Mi
   # Annotations to add to the K8sosquery pods (attached to the DaemonSet pod template).
   # Useful for things like enabling a service mesh sidecar or triggering config-reload tooling.
   podAnnotations: {}

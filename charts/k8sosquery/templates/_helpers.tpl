@@ -130,3 +130,22 @@ with existing annotations
 {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- end }}
+
+{{/*
+Render one nodeSelectorTerm per key of the given nodeSelector-style map, each with a single
+NotIn matchExpression that negates that key/value pair. nodeSelectorTerms are OR'd together and
+matchExpressions within a single term are AND'd, so N separate negated single-key terms
+correctly express "NOT (all of these labels match)" via De Morgan's law. Used to exclude the
+nodes targeted by daemonset.override.nodeSelector from the default DaemonSet's affinity, so the
+two DaemonSets never both try to schedule a pod onto the same node.
+Takes a single argument: the nodeSelector map to negate, e.g. .Values.daemonset.override.nodeSelector
+*/}}
+{{- define "k8sosquery.excludeNodeSelectorAffinity" -}}
+{{- range $key, $value := . -}}
+- matchExpressions:
+  - key: {{ $key }}
+    operator: NotIn
+    values:
+    - {{ $value | quote }}
+{{ end -}}
+{{- end }}

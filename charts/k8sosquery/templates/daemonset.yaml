@@ -1,3 +1,4 @@
+{{- define "k8sosquery.daemonset" -}}
 # Create Uptycs Osquery daemonset
 apiVersion: apps/v1
 kind: DaemonSet
@@ -6,7 +7,7 @@ metadata:
   {{- include "k8sosquery.namespace" . }}
   labels:
     {{- include "k8sosquery.appendCommonLabels" . }}
-    app.kubernetes.io/name: uptycs-osquery
+    app.kubernetes.io/name: uptycs-osquery{{ if .IsOverride }}-override{{ end }}
     app.kubernetes.io/version: 1.0.0
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
@@ -18,11 +19,11 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: uptycs-osquery
+      app.kubernetes.io/name: uptycs-osquery{{ if .IsOverride }}-override{{ end }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: uptycs-osquery
+        app.kubernetes.io/name: uptycs-osquery{{ if .IsOverride }}-override{{ end }}
         app.kubernetes.io/version: 1.0.0
         app.kubernetes.io/component: endpoint
         app.kubernetes.io/part-of: Uptycs
@@ -43,8 +44,18 @@ spec:
         effect: NoSchedule
       {{- end }}
       {{- end }}
-      {{- with .Values.daemonset.affinity }}
+      {{- if .Values.daemonset.affinity }}
       affinity:
+      {{- toYaml .Values.daemonset.affinity | nindent 8 }}
+      {{- else if and (not .IsOverride) (gt (len (.Values.daemonset.override.nodeSelector | default dict)) 0) }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            {{- include "k8sosquery.excludeNodeSelectorAffinity" .Values.daemonset.override.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- with .Values.daemonset.nodeSelector }}
+      nodeSelector:
       {{- toYaml . | nindent 8 }}
       {{- end }}
       # nodeSelector:
@@ -105,9 +116,9 @@ spec:
         {{- end}}
         {{- with .Values.daemonset.containers.resources }}
         resources:
-        {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
         {{- end }}
-        volumeMounts: 
+        volumeMounts:
         {{- range $k, $v := .Values.daemonset.containers.volumeMounts }}
         - name: {{ $v.name }}
         {{- if hasKey $v "mountPath" }}
@@ -147,3 +158,19 @@ spec:
       - name: config
         configMap:
           name: {{ .Values.configmap.name }}
+{{- end -}}
+{{- $overrideNodeSelector := .Values.daemonset.override.nodeSelector | default dict }}
+{{- $overrideResources := .Values.daemonset.override.resources | default dict }}
+{{- $hasOverride := gt (len $overrideNodeSelector) 0 }}
+{{- $defaultCtx := dict "Values" .Values "Release" .Release "Chart" .Chart "Capabilities" .Capabilities "Template" .Template "Files" .Files "IsOverride" false }}
+{{ include "k8sosquery.daemonset" $defaultCtx }}
+{{- if $hasOverride }}
+{{- $overrideValues := mustDeepCopy .Values }}
+{{- $mergedResources := mustMerge (mustDeepCopy $overrideResources) .Values.daemonset.containers.resources }}
+{{- $_ := set $overrideValues.daemonset.containers "resources" $mergedResources }}
+{{- $_ := set $overrideValues.daemonset "name" (printf "%s-override" $overrideValues.daemonset.name) }}
+{{- $_ := set $overrideValues.daemonset "nodeSelector" $overrideNodeSelector }}
+{{- $overrideCtx := dict "Values" $overrideValues "Release" .Release "Chart" .Chart "Capabilities" .Capabilities "Template" .Template "Files" .Files "IsOverride" true }}
+---
+{{ include "k8sosquery.daemonset" $overrideCtx }}
+{{- end }}

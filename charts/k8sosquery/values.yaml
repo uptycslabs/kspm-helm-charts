@@ -114,6 +114,16 @@ daemonset:
   #           operator: In
   #           values:
   #           - linux
+  # Node selector for K8sosquery pods can be defined here in this section to restrict pods to a
+  # subset of nodes matching the given label(s). Leave empty (the default) to run on every node
+  # the tolerations/affinity above allow. Any node label works here - a built-in one (e.g.
+  # topology.kubernetes.io/zone, node.kubernetes.io/instance-type) or a custom one you apply
+  # yourself. When using variants (see below), set nodeSelector per variant to scope each
+  # variant to its own nodes rather than setting it here.
+  # Example:
+  # nodeSelector:
+  #   node.kubernetes.io/instance-type: c5.4xlarge
+  nodeSelector: {}
   # Annotations to add to the K8sosquery pods (attached to the DaemonSet pod template).
   # Useful for things like enabling a service mesh sidecar or triggering config-reload tooling.
   podAnnotations: {}

@@ -1,42 +1,55 @@
-{{- if not (and .Values.daemonset.nodeGroups.enabled (gt (len .Values.daemonset.nodeGroups.groups) 0)) }}
-# Create Uptycs Osquery daemonset
+{{- if and .Values.daemonset.nodeGroups.enabled (gt (len .Values.daemonset.nodeGroups.groups) 0) }}
+{{- $groups := .Values.daemonset.nodeGroups.groups }}
+{{- range $i, $group := $groups }}
+{{- if gt (len $group.nodeSelector) 1 }}
+{{- fail (printf "daemonset.nodeGroups.groups[%d] (%s): nodeSelector must have exactly one key for auto-generated anti-affinity to be correct" $i $group.name) }}
+{{- end }}
+{{- end }}
+{{- range $i, $group := $groups }}
+{{- if $i }}
+---
+{{ end }}
+{{- $mergedResources := mustMerge (mustDeepCopy ($group.resources | default dict)) (mustDeepCopy $.Values.daemonset.containers.resources) }}
+{{- $others := list }}
+{{- range $j, $other := $groups }}{{- if ne $i $j }}{{- $others = append $others $other.nodeSelector }}{{- end }}{{- end }}
+# Create Uptycs Osquery daemonset for node group {{ $group.name }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ .Values.daemonset.name }}
-  {{- include "k8sosquery.namespace" . }}
+  name: {{ $.Values.daemonset.name }}-{{ $group.name }}
+  {{- include "k8sosquery.namespace" $ }}
   labels:
-    {{- include "k8sosquery.appendCommonLabels" . }}
-    app.kubernetes.io/name: uptycs-osquery
+    {{- include "k8sosquery.appendCommonLabels" $ }}
+    app.kubernetes.io/name: uptycs-osquery-{{ $group.name }}
     app.kubernetes.io/version: 1.0.0
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
-  {{- include "k8sosquery.commonAnnotations" . }}
+  {{- include "k8sosquery.commonAnnotations" $ }}
 spec:
-  {{- with .Values.daemonset.updateStrategy }}
+  {{- with $.Values.daemonset.updateStrategy }}
   updateStrategy:
   {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: uptycs-osquery
+      app.kubernetes.io/name: uptycs-osquery-{{ $group.name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: uptycs-osquery
+        app.kubernetes.io/name: uptycs-osquery-{{ $group.name }}
         app.kubernetes.io/version: 1.0.0
         app.kubernetes.io/component: endpoint
         app.kubernetes.io/part-of: Uptycs
-      {{- with .Values.daemonset.podAnnotations }}
+      {{- with $.Values.daemonset.podAnnotations }}
       annotations:
       {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
       serviceAccountName: uptycs-osquery
-      {{- if .Values.daemonset.priorityClassName }}
-      priorityClassName: {{ .Values.daemonset.priorityClassName }}
+      {{- if $.Values.daemonset.priorityClassName }}
+      priorityClassName: {{ $.Values.daemonset.priorityClassName }}
       {{- end }}
-      {{- with .Values.daemonset.tolerations }}
+      {{- with $.Values.daemonset.tolerations }}
       tolerations:
       {{- toYaml . | nindent 6 }}
       {{- if $.Capabilities.APIVersions.Has "config.openshift.io/v1" }}
@@ -44,45 +57,48 @@ spec:
         effect: NoSchedule
       {{- end }}
       {{- end }}
-      {{- with .Values.daemonset.affinity }}
+      {{- if $.Values.daemonset.affinity }}
       affinity:
-      {{- toYaml . | nindent 8 }}
+      {{- toYaml $.Values.daemonset.affinity | nindent 8 }}
+      {{- else if gt (len $others) 0 }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            {{- include "k8sosquery.excludeOtherGroupsAffinity" $others | nindent 12 }}
       {{- end }}
-      # nodeSelector:
-      #   node-role.kubernetes.io/worker: ''
-      # If this daemonset should be restricted to a set of nodes, use node selector to specify the node label(s)
-      # nodeSelector:
-      #  app: uptycs-osquery
+      nodeSelector:
+        {{- toYaml $group.nodeSelector | nindent 8 }}
       hostPID: true
       hostIPC: true
       hostNetwork: true
-      {{- if .Values.daemonset.dnsPolicy }}
-      dnsPolicy: {{ .Values.daemonset.dnsPolicy }}
+      {{- if $.Values.daemonset.dnsPolicy }}
+      dnsPolicy: {{ $.Values.daemonset.dnsPolicy }}
       {{- end }}
       terminationGracePeriodSeconds: 30
       containers:
-      - name: {{ .Values.daemonset.containers.name }}
-        image: {{ .Values.daemonset.containers.image_name }}
-        imagePullPolicy: {{ .Values.daemonset.containers.pullPolicy }}
-        {{- with .Values.daemonset.containers.startupProbe }}
+      - name: {{ $.Values.daemonset.containers.name }}
+        image: {{ $.Values.daemonset.containers.image_name }}
+        imagePullPolicy: {{ $.Values.daemonset.containers.pullPolicy }}
+        {{- with $.Values.daemonset.containers.startupProbe }}
         startupProbe:
         {{- toYaml . | nindent 10 }}
         {{- end }}
-        {{- with .Values.daemonset.containers.livenessProbe }}
+        {{- with $.Values.daemonset.containers.livenessProbe }}
         livenessProbe:
         {{- toYaml . | nindent 10 }}
         {{- end }}
-        {{- with .Values.daemonset.containers.readinessProbe }}
+        {{- with $.Values.daemonset.containers.readinessProbe }}
         readinessProbe:
         {{- toYaml . | nindent 10 }}
         {{- end }}
-        {{- if eq .Values.daemonset.dnsPolicy "ClusterFirstWithHostNet" }}
+        {{- if eq $.Values.daemonset.dnsPolicy "ClusterFirstWithHostNet" }}
         lifecycle:
           postStart:
             exec:
               command: ["/bin/sh", "-c", "mount --bind /etc/resolv.conf /host/etc/resolv.conf"]
         {{- end }}
-        {{- if eq .Values.isGKEAutopilot true }}
+        {{- if eq $.Values.isGKEAutopilot true }}
         securityContext:
           capabilities:
             add:
@@ -100,16 +116,14 @@ spec:
           privileged: true
         {{- end }}
         env:
-        {{- range $k, $v := .Values.daemonset.containers.env }}
+        {{- range $k, $v := $.Values.daemonset.containers.env }}
         - name: {{ $v.name }}
           value: {{ $v.value }}
         {{- end}}
-        {{- with .Values.daemonset.containers.resources }}
         resources:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        volumeMounts: 
-        {{- range $k, $v := .Values.daemonset.containers.volumeMounts }}
+        {{- toYaml $mergedResources | nindent 10 }}
+        volumeMounts:
+        {{- range $k, $v := $.Values.daemonset.containers.volumeMounts }}
         - name: {{ $v.name }}
         {{- if hasKey $v "mountPath" }}
           mountPath: {{ $v.mountPath }}
@@ -121,7 +135,7 @@ spec:
           mountPropagation: {{ $v.mountPropagation }}
         {{- end }}
         {{- end }}
-        {{- $isVersionGreaterOrEqual := include "k8sosquery.version" . }}
+        {{- $isVersionGreaterOrEqual := include "k8sosquery.version" $ }}
         # Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that
         {{- if eq $isVersionGreaterOrEqual "true"}}
         - mountPath: /etc/osquery/cert
@@ -130,8 +144,8 @@ spec:
         {{- end }}
           name: nginxsecret
           readOnly: true
-      volumes: 
-      {{- range $k, $v := .Values.daemonset.volumes }}
+      volumes:
+      {{- range $k, $v := $.Values.daemonset.volumes }}
       - name: {{ $v.name }}
       {{- if hasKey $v "hostPath" }}
         hostPath:
@@ -147,5 +161,6 @@ spec:
       {{- end }}
       - name: config
         configMap:
-          name: {{ .Values.configmap.name }}
+          name: {{ $.Values.configmap.name }}
+{{- end }}
 {{- end }}

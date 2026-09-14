@@ -120,6 +120,48 @@ daemonset:
   # Example:
   # podAnnotations:
   #   example.com/annotation-key: annotation-value
+  # When enabled, the chart renders ONE DaemonSet PER ENTRY in `groups` below (from
+  # templates/daemonset-nodegroups.yaml), INSTEAD OF the single default DaemonSet above, so each
+  # node group can run K8sosquery with its own cpu/memory settings. Each group's nodeSelector
+  # must select a mutually-exclusive, non-overlapping set of nodes -- typically a single label
+  # such as node.kubernetes.io/instance-type. The chart auto-generates node anti-affinity so
+  # each group's DaemonSet only schedules onto its own nodes, but this only holds if every
+  # group's nodeSelector has exactly one key/value pair; groups with more than one nodeSelector
+  # key will fail chart rendering.
+  nodeGroups:
+    enabled: false
+    groups: []
+    # groups:
+    # - name: medium
+    #   nodeSelector:
+    #     node.kubernetes.io/instance-type: t3.medium
+    #   # Partial override: any field left unset here falls back to
+    #   # daemonset.containers.resources above.
+    #   resources:
+    #     limits:
+    #       cpu: 500m
+    #       memory: 500Mi
+    # - name: large
+    #   nodeSelector:
+    #     node.kubernetes.io/instance-type: t3.large
+    #   resources:
+    #     limits:
+    #       cpu: 1000m
+    #       memory: 1000Mi
+    # - name: xlarge
+    #   nodeSelector:
+    #     node.kubernetes.io/instance-type: t3.xlarge
+    #   resources:
+    #     limits:
+    #       cpu: 2000m
+    #       memory: 2000Mi
+    # - name: 2xlarge
+    #   nodeSelector:
+    #     node.kubernetes.io/instance-type: t3.2xlarge
+    #   resources:
+    #     limits:
+    #       cpu: 4000m
+    #       memory: 4000Mi
 
 # Configmap contains osquery flags & tags which define K8sosquery's configuration in the cluster.
 # NOTE: Please consult the Uptycs customer support before changing these configuration parameters.

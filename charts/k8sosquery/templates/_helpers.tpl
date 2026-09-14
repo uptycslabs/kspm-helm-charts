@@ -130,3 +130,24 @@ with existing annotations
 {{- toYaml . | nindent 4 }}
 {{- end }}
 {{- end }}
+
+{{/*
+Render a single nodeSelectorTerm that excludes nodes matching ANY of the given other node
+groups' nodeSelectors. Takes a list of single-key nodeSelector maps (one per other group).
+Each entry contributes one NotIn matchExpression, all AND'd together within this one term --
+by De Morgan's law, "NOT(matches group B) AND NOT(matches group C) AND ..." is exactly what's
+needed to keep a group's DaemonSet off every other group's nodes, and that only collapses to a
+single flat term because each group's nodeSelector is constrained to exactly one key (enforced
+by the caller). Used by templates/daemonset-nodegroups.yaml.
+*/}}
+{{- define "k8sosquery.excludeOtherGroupsAffinity" -}}
+- matchExpressions:
+  {{- range . }}
+  {{- range $key, $value := . }}
+  - key: {{ $key }}
+    operator: NotIn
+    values:
+    - {{ $value | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}

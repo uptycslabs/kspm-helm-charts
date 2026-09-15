@@ -120,13 +120,16 @@ daemonset:
   # Example:
   # podAnnotations:
   #   example.com/annotation-key: annotation-value
-  # When enabled, the chart renders ONE DaemonSet PER ENTRY in `groups` below (from
-  # templates/daemonset-nodegroups.yaml), INSTEAD OF the single default DaemonSet above, so each
-  # node group can run K8sosquery with its own cpu/memory settings. Each group's nodeSelector
-  # must select a mutually-exclusive, non-overlapping set of nodes -- typically a single label
-  # such as node.kubernetes.io/instance-type. The chart auto-generates node anti-affinity so
-  # each group's DaemonSet only schedules onto its own nodes, but this only holds if every
-  # group's nodeSelector has exactly one key/value pair; groups with more than one nodeSelector
+  # When enabled, the chart ALSO renders one DaemonSet PER ENTRY in `groups` below (from
+  # templates/daemonset-nodegroups.yaml), each running K8sosquery with its own cpu/memory
+  # settings on the nodes matched by its nodeSelector. The default DaemonSet above keeps running
+  # too, and automatically excludes every node matched by any group below, so it acts as the
+  # fallback/default configuration for any node that doesn't have one of the group labels. Each
+  # group's nodeSelector must select a mutually-exclusive, non-overlapping set of nodes --
+  # typically a single label such as node.kubernetes.io/instance-type. The chart auto-generates
+  # all of this node anti-affinity (both the default DaemonSet's exclusion of every group, and
+  # each group's exclusion of every other group), but this only holds if every group's
+  # nodeSelector has exactly one key/value pair; groups with zero or more than one nodeSelector
   # key will fail chart rendering.
   nodeGroups:
     enabled: false

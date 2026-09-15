@@ -1,4 +1,3 @@
-{{- if not (and .Values.daemonset.nodeGroups.enabled (gt (len .Values.daemonset.nodeGroups.groups) 0)) }}
 # Create Uptycs Osquery daemonset
 apiVersion: apps/v1
 kind: DaemonSet
@@ -44,9 +43,20 @@ spec:
         effect: NoSchedule
       {{- end }}
       {{- end }}
-      {{- with .Values.daemonset.affinity }}
+      {{- if .Values.daemonset.affinity }}
       affinity:
-      {{- toYaml . | nindent 8 }}
+      {{- toYaml .Values.daemonset.affinity | nindent 8 }}
+      {{- else if and .Values.daemonset.nodeGroups.enabled (gt (len .Values.daemonset.nodeGroups.groups) 0) }}
+      # This DaemonSet acts as the fallback for any node that doesn't match one of the
+      # daemonset.nodeGroups.groups nodeSelectors below, so it must stay off of every node those
+      # groups already cover.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            {{- $allGroupSelectors := list }}
+            {{- range .Values.daemonset.nodeGroups.groups }}{{- $allGroupSelectors = append $allGroupSelectors .nodeSelector }}{{- end }}
+            {{- include "k8sosquery.excludeOtherGroupsAffinity" $allGroupSelectors | nindent 12 }}
       {{- end }}
       # nodeSelector:
       #   node-role.kubernetes.io/worker: ''
@@ -79,4 +89,3 @@ spec:
       - name: config
         configMap:
           name: {{ .Values.configmap.name }}
-{{- end }}

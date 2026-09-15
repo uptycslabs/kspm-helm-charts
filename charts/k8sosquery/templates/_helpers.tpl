@@ -151,3 +151,82 @@ by the caller). Used by templates/daemonset-nodegroups.yaml.
   {{- end }}
   {{- end }}
 {{- end }}
+
+{{/*
+Render the K8sosquery container spec (the single-element `containers:` list, including probes,
+security context, env, resources and volumeMounts). Shared by templates/daemonset.yaml and
+templates/daemonset-nodegroups.yaml so the two don't drift out of sync.
+Takes a dict: "global" (the root template context, i.e. `.` or `$`) and "resources" (the
+resources map to render for this container -- the default daemonset.containers.resources for the
+single-DaemonSet path, or a per-node-group merged map for the multi-node-group path).
+*/}}
+{{- define "k8sosquery.containers" -}}
+containers:
+- name: {{ .global.Values.daemonset.containers.name }}
+  image: {{ .global.Values.daemonset.containers.image_name }}
+  imagePullPolicy: {{ .global.Values.daemonset.containers.pullPolicy }}
+  {{- with .global.Values.daemonset.containers.startupProbe }}
+  startupProbe:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .global.Values.daemonset.containers.livenessProbe }}
+  livenessProbe:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .global.Values.daemonset.containers.readinessProbe }}
+  readinessProbe:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if eq .global.Values.daemonset.dnsPolicy "ClusterFirstWithHostNet" }}
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "mount --bind /etc/resolv.conf /host/etc/resolv.conf"]
+  {{- end }}
+  {{- if eq .global.Values.isGKEAutopilot true }}
+  securityContext:
+    capabilities:
+      add:
+        - SYS_ADMIN
+        - BPF
+        - PERFMON
+        - PTRACE
+        - NET_ADMIN
+        - NET_RAW
+        - SYS_CHROOT
+        - FOWNER
+        - SYS_RESOURCE
+  {{- else }}
+  securityContext:
+    privileged: true
+  {{- end }}
+  env:
+  {{- range $k, $v := .global.Values.daemonset.containers.env }}
+  - name: {{ $v.name }}
+    value: {{ $v.value }}
+  {{- end}}
+  resources:
+  {{- toYaml .resources | nindent 4 }}
+  volumeMounts:
+  {{- range $k, $v := .global.Values.daemonset.containers.volumeMounts }}
+  - name: {{ $v.name }}
+  {{- if hasKey $v "mountPath" }}
+    mountPath: {{ $v.mountPath }}
+  {{- end }}
+  {{- if hasKey $v "readOnly" }}
+    readOnly: {{ $v.readOnly }}
+  {{- end}}
+  {{- if hasKey $v "mountPropagation" }}
+    mountPropagation: {{ $v.mountPropagation }}
+  {{- end }}
+  {{- end }}
+  {{- $isVersionGreaterOrEqual := include "k8sosquery.version" .global }}
+  # Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that
+  {{- if eq $isVersionGreaterOrEqual "true"}}
+  - mountPath: /etc/osquery/cert
+  {{- else }}
+  - mountPath: /etc/osquery
+  {{- end }}
+    name: nginxsecret
+    readOnly: true
+{{- end }}

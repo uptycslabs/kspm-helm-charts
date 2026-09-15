@@ -144,7 +144,7 @@ daemonset:
     # groups:
     # - name: medium
     #   nodeSelector:
-    #     node.kubernetes.io/instance-type: t3.medium
+    #     node-type: medium
     #   # Partial override: any field left unset here falls back to
     #   # daemonset.containers.resources above.
     #   resources:
@@ -153,21 +153,21 @@ daemonset:
     #       memory: 500Mi
     # - name: large
     #   nodeSelector:
-    #     node.kubernetes.io/instance-type: t3.large
+    #     node-type: large
     #   resources:
     #     limits:
     #       cpu: 1000m
     #       memory: 1000Mi
     # - name: xlarge
     #   nodeSelector:
-    #     node.kubernetes.io/instance-type: t3.xlarge
+    #     node-type: xlarge
     #   resources:
     #     limits:
     #       cpu: 2000m
     #       memory: 2000Mi
     # - name: 2xlarge
     #   nodeSelector:
-    #     node.kubernetes.io/instance-type: t3.2xlarge
+    #     node-type: 2xlarge
     #   resources:
     #     limits:
     #       cpu: 4000m

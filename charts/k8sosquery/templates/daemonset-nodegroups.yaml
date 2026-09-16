@@ -99,6 +99,6 @@ spec:
       {{- end }}
       - name: config
         configMap:
-          name: {{ $.Values.configmap.name }}
+          name: {{ $.Values.configmap.name }}-{{ $group.name }}
 {{- end }}
 {{- end }}

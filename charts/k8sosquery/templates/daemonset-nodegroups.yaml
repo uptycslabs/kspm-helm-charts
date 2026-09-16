@@ -1,0 +1,104 @@
+{{- if and .Values.daemonset.nodeGroups.enabled (gt (len .Values.daemonset.nodeGroups.groups) 0) }}
+{{- $groups := .Values.daemonset.nodeGroups.groups }}
+{{- $names := list }}
+{{- range $groups }}{{- $names = append $names .name }}{{- end }}
+{{- if ne (len $names) (len (uniq $names)) }}
+{{- fail (printf "daemonset.nodeGroups.groups: names must be unique, got [%s]" (join ", " $names)) }}
+{{- end }}
+{{- range $i, $group := $groups }}
+{{- if ne (len $group.nodeSelector) 1 }}
+{{- fail (printf "daemonset.nodeGroups.groups[%d] (%s): nodeSelector must have exactly one key for auto-generated anti-affinity to be correct" $i $group.name) }}
+{{- end }}
+{{- end }}
+{{- range $i, $group := $groups }}
+{{- if $i }}
+---
+{{ end }}
+{{- $mergedResources := mustMerge (mustDeepCopy ($group.resources | default dict)) (mustDeepCopy $.Values.daemonset.containers.resources) }}
+{{- $others := list }}
+{{- range $j, $other := $groups }}{{- if ne $i $j }}{{- $others = append $others $other.nodeSelector }}{{- end }}{{- end }}
+# Create Uptycs Osquery daemonset for node group {{ $group.name }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $.Values.daemonset.name }}-{{ $group.name }}
+  {{- include "k8sosquery.namespace" $ }}
+  labels:
+    {{- include "k8sosquery.appendCommonLabels" $ }}
+    app.kubernetes.io/name: uptycs-osquery-{{ $group.name }}
+    app.kubernetes.io/version: 1.0.0
+    app.kubernetes.io/component: endpoint
+    app.kubernetes.io/part-of: Uptycs
+  {{- include "k8sosquery.commonAnnotations" $ }}
+spec:
+  {{- with $.Values.daemonset.updateStrategy }}
+  updateStrategy:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: uptycs-osquery-{{ $group.name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: uptycs-osquery-{{ $group.name }}
+        app.kubernetes.io/version: 1.0.0
+        app.kubernetes.io/component: endpoint
+        app.kubernetes.io/part-of: Uptycs
+      {{- with $.Values.daemonset.podAnnotations }}
+      annotations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: uptycs-osquery
+      {{- if $.Values.daemonset.priorityClassName }}
+      priorityClassName: {{ $.Values.daemonset.priorityClassName }}
+      {{- end }}
+      {{- with $.Values.daemonset.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+      {{- if $.Capabilities.APIVersions.Has "config.openshift.io/v1" }}
+      - key: node-role.kubernetes.io/infra
+        effect: NoSchedule
+      {{- end }}
+      {{- end }}
+      {{- if $.Values.daemonset.affinity }}
+      affinity:
+      {{- toYaml $.Values.daemonset.affinity | nindent 8 }}
+      {{- else if gt (len $others) 0 }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            {{- include "k8sosquery.excludeOtherGroupsAffinity" $others | nindent 12 }}
+      {{- end }}
+      nodeSelector:
+        {{- toYaml $group.nodeSelector | nindent 8 }}
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      {{- if $.Values.daemonset.dnsPolicy }}
+      dnsPolicy: {{ $.Values.daemonset.dnsPolicy }}
+      {{- end }}
+      terminationGracePeriodSeconds: 30
+      {{- include "k8sosquery.containers" (dict "global" $ "resources" $mergedResources) | nindent 6 }}
+      volumes:
+      {{- range $k, $v := $.Values.daemonset.volumes }}
+      - name: {{ $v.name }}
+      {{- if hasKey $v "hostPath" }}
+        hostPath:
+          path: {{ $v.hostPath.path }}
+      {{- end }}
+      {{- if hasKey $v "secret" }}
+        secret:
+          secretName: {{ $v.secret.secretName }}
+          {{- if  hasKey $v.secret "optional"}}
+          optional: {{ $v.secret.optional }}
+          {{- end }}
+      {{- end }}
+      {{- end }}
+      - name: config
+        configMap:
+          name: {{ $.Values.configmap.name }}
+{{- end }}
+{{- end }}

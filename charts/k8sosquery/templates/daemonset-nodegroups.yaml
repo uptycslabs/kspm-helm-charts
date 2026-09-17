@@ -15,6 +15,10 @@
 ---
 {{ end }}
 {{- $mergedResources := mustMerge (mustDeepCopy ($group.resources | default dict)) (mustDeepCopy $.Values.daemonset.containers.resources) }}
+{{- $configMapName := $.Values.configmap.name }}
+{{- if gt (len ($group.configmap | default dict)) 0 }}
+{{- $configMapName = printf "%s-%s" $.Values.configmap.name $group.name }}
+{{- end }}
 {{- $others := list }}
 {{- range $j, $other := $groups }}{{- if ne $i $j }}{{- $others = append $others $other.nodeSelector }}{{- end }}{{- end }}
 # Create Uptycs Osquery daemonset for node group {{ $group.name }}
@@ -99,6 +103,6 @@ spec:
       {{- end }}
       - name: config
         configMap:
-          name: {{ $.Values.configmap.name }}-{{ $group.name }}
+          name: {{ $configMapName }}
 {{- end }}
 {{- end }}

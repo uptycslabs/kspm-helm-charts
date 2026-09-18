@@ -130,7 +130,10 @@ daemonset:
   # all of this node anti-affinity (both the default DaemonSet's exclusion of every group, and
   # each group's exclusion of every other group), but this only holds if every group's
   # nodeSelector has exactly one key/value pair; groups with zero or more than one nodeSelector
-  # key will fail chart rendering.
+  # key will fail chart rendering. Each group also gets its own ConfigMap (named
+  # <configmap.name>-<group name>): configmap.tags/local_proxy below can be overridden per
+  # group, falling back to configmap.data.tags/local_proxy above when unset. The large shared
+  # osquery.flags block is always the same for every group and cannot be overridden per group.
   nodeGroups:
     enabled: false
     groups: []
@@ -144,6 +147,14 @@ daemonset:
     #     limits:
     #       cpu: 500m
     #       memory: 500Mi
+    #   # Optional: only set this if this group needs different osquery.tags/local_proxy than
+    #   # the default below. Setting it creates a dedicated ConfigMap for this group (unset
+    #   # fields still fall back to configmap.data.tags/local_proxy below); leaving it out
+    #   # entirely means this group's DaemonSet just mounts the shared default ConfigMap, with
+    #   # no extra ConfigMap created for it.
+    #   configmap:
+    #     tags: team/medium-nodes
+    #     local_proxy:
     # - name: large
     #   nodeSelector:
     #     node-type: large

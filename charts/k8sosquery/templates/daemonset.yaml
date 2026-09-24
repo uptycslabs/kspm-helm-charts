@@ -74,9 +74,9 @@ spec:
       volumes:
       {{- range $k, $v := .Values.daemonset.volumes }}
       - name: {{ $v.name }}
-      {{- if hasKey $v "hostPath" }}
+      {{- with $v.hostPath }}
         hostPath:
-          path: {{ $v.hostPath.path }}
+        {{- toYaml . | nindent 10 }}
       {{- end }}
       {{- if hasKey $v "secret" }}
         secret:

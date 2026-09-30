@@ -383,6 +383,14 @@ containers:
 - name: {{ .global.Values.daemonset.containers.name }}
   image: {{ .global.Values.daemonset.containers.image_name }}
   imagePullPolicy: {{ .global.Values.daemonset.containers.pullPolicy }}
+  {{- with .global.Values.daemonset.containers.command }}
+  command:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .global.Values.daemonset.containers.args }}
+  args:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with .global.Values.daemonset.containers.startupProbe }}
   startupProbe:
   {{- toYaml . | nindent 4 }}

@@ -132,24 +132,56 @@ with existing annotations
 {{- end }}
 
 {{/*
-Render a single nodeSelectorTerm that excludes nodes matching ANY of the given other node
-groups' nodeSelectors. Takes a list of single-key nodeSelector maps (one per other group).
-Each entry contributes one NotIn matchExpression, all AND'd together within this one term --
-by De Morgan's law, "NOT(matches group B) AND NOT(matches group C) AND ..." is exactly what's
-needed to keep a group's DaemonSet off every other group's nodes, and that only collapses to a
-single flat term because each group's nodeSelector is constrained to exactly one key (enforced
-by the caller). Used by templates/daemonset-nodegroups.yaml.
+Render the nodeSelectors of the given node groups as a YAML list of matchExpressions: one per
+group, on its single nodeSelector key, with the given operator ("In" or "NotIn") and all of the
+group's values. Groups without a nodeSelector are skipped. Parse the result with fromYamlArray.
+Takes a dict: "groups" and "operator".
 */}}
-{{- define "k8sosquery.excludeOtherGroupsAffinity" -}}
-- matchExpressions:
-  {{- range . }}
-  {{- range $key, $value := . }}
-  - key: {{ $key }}
-    operator: NotIn
-    values:
-    - {{ $value | quote }}
-  {{- end }}
-  {{- end }}
+{{- define "k8sosquery.nodeGroupExpressions" -}}
+{{- $expressions := list }}
+{{- range .groups }}
+{{- range $key, $value := (.nodeSelector | default dict) }}
+{{- $values := list }}
+{{- range (kindIs "slice" $value | ternary $value (list $value)) }}{{- $values = append $values (toString .) }}{{- end }}
+{{- $expressions = append $expressions (dict "key" $key "operator" $.operator "values" $values) }}
+{{- end }}
+{{- end }}
+{{- toYaml $expressions }}
+{{- end }}
+
+{{/*
+Render the `affinity:` block of a K8sosquery DaemonSet pod. Takes a dict:
+- "affinity": daemonset.affinity, passed through apart from the additions below.
+- "expressions": node group matchExpressions, AND'd into every required nodeSelectorTerm (terms
+  are OR'd, so each one needs them), or into a new term when there is none.
+- "onePodPerNode": when true, appends a required podAntiAffinity term against other K8sosquery
+  pods on the node, so a pod moving to another DaemonSet waits for the old pod to terminate
+  instead of overlapping it. The labels it matches are on every K8sosquery DaemonSet pod since
+  the chart's first version, so pods from older releases are covered too.
+*/}}
+{{- define "k8sosquery.affinity" -}}
+{{- $affinity := mustDeepCopy (.affinity | default dict) }}
+{{- if .expressions }}
+{{- $nodeAffinity := get $affinity "nodeAffinity" | default dict }}
+{{- $required := get $nodeAffinity "requiredDuringSchedulingIgnoredDuringExecution" | default dict }}
+{{- $terms := list }}
+{{- range (get $required "nodeSelectorTerms" | default (list dict)) }}
+{{- $terms = append $terms (set . "matchExpressions" (concat (get . "matchExpressions" | default list) $.expressions)) }}
+{{- end }}
+{{- $_ := set $required "nodeSelectorTerms" $terms }}
+{{- $_ := set $nodeAffinity "requiredDuringSchedulingIgnoredDuringExecution" $required }}
+{{- $_ := set $affinity "nodeAffinity" $nodeAffinity }}
+{{- end }}
+{{- if .onePodPerNode }}
+{{- $podAntiAffinity := get $affinity "podAntiAffinity" | default dict }}
+{{- $term := dict "labelSelector" (dict "matchLabels" (dict "app.kubernetes.io/part-of" "Uptycs" "app.kubernetes.io/component" "endpoint")) "topologyKey" "kubernetes.io/hostname" }}
+{{- $_ := set $podAntiAffinity "requiredDuringSchedulingIgnoredDuringExecution" (append (get $podAntiAffinity "requiredDuringSchedulingIgnoredDuringExecution" | default list) $term) }}
+{{- $_ := set $affinity "podAntiAffinity" $podAntiAffinity }}
+{{- end }}
+{{- with $affinity }}
+affinity:
+{{- toYaml . | nindent 2 }}
+{{- end }}
 {{- end }}
 
 {{/*

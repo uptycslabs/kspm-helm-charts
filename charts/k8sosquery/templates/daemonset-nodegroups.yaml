@@ -1,14 +1,46 @@
-{{- if and .Values.daemonset.nodeGroups.enabled (gt (len .Values.daemonset.nodeGroups.groups) 0) }}
-{{- $groups := .Values.daemonset.nodeGroups.groups }}
+{{- $nodeGroups := .Values.daemonset.nodeGroups }}
+{{- if and $nodeGroups.enabled $nodeGroups.disableDefault (eq (len $nodeGroups.groups) 0) }}
+{{- fail "daemonset.nodeGroups.disableDefault requires at least one group, or no DaemonSet would be rendered" }}
+{{- end }}
+{{- if and $nodeGroups.enabled (gt (len $nodeGroups.groups) 0) }}
+{{- $groups := $nodeGroups.groups }}
 {{- $names := list }}
 {{- range $groups }}{{- $names = append $names .name }}{{- end }}
 {{- if ne (len $names) (len (uniq $names)) }}
 {{- fail (printf "daemonset.nodeGroups.groups: names must be unique, got [%s]" (join ", " $names)) }}
 {{- end }}
+{{- $catchAll := list }}
+{{- $selected := list }}
 {{- range $i, $group := $groups }}
-{{- if ne (len $group.nodeSelector) 1 }}
+{{- $selector := $group.nodeSelector | default dict }}
+{{- if eq (len $selector) 0 }}
+{{- if not $nodeGroups.disableDefault }}
+{{- fail (printf "daemonset.nodeGroups.groups[%d] (%s): nodeSelector may only be omitted with daemonset.nodeGroups.disableDefault, or the group would overlap the default DaemonSet" $i $group.name) }}
+{{- end }}
+{{- $catchAll = append $catchAll $group.name }}
+{{- else if ne (len $selector) 1 }}
 {{- fail (printf "daemonset.nodeGroups.groups[%d] (%s): nodeSelector must have exactly one key for auto-generated anti-affinity to be correct" $i $group.name) }}
 {{- end }}
+{{- range $key, $value := $selector }}
+{{- $values := kindIs "slice" $value | ternary $value (list $value) }}
+{{- if eq (len $values) 0 }}
+{{- fail (printf "daemonset.nodeGroups.groups[%d] (%s): nodeSelector %s must have at least one value" $i $group.name $key) }}
+{{- end }}
+{{- range $values }}
+{{- $pair := printf "%s=%v" $key . }}
+{{- if has $pair $selected }}
+{{- fail (printf "daemonset.nodeGroups.groups[%d] (%s): nodeSelector %s is selected more than once across groups" $i $group.name $pair) }}
+{{- end }}
+{{- $selected = append $selected $pair }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if gt (len $catchAll) 1 }}
+{{- fail (printf "daemonset.nodeGroups.groups: at most one group may omit nodeSelector, got [%s]" (join ", " $catchAll)) }}
+{{- end }}
+{{- $maxSurge := toString (dig "rollingUpdate" "maxSurge" 0 (.Values.daemonset.updateStrategy | default dict)) }}
+{{- if not (has $maxSurge (list "0" "0%")) }}
+{{- fail (printf "daemonset.updateStrategy.rollingUpdate.maxSurge must be 0 with node groups, got %s: the one-pod-per-node podAntiAffinity would keep a surge pod from ever scheduling" $maxSurge) }}
 {{- end }}
 {{- range $i, $group := $groups }}
 {{- if $i }}
@@ -20,7 +52,14 @@
 {{- $configMapName = printf "%s-%s" $.Values.configmap.name $group.name }}
 {{- end }}
 {{- $others := list }}
-{{- range $j, $other := $groups }}{{- if ne $i $j }}{{- $others = append $others $other.nodeSelector }}{{- end }}{{- end }}
+{{- range $j, $other := $groups }}{{- if ne $i $j }}{{- $others = append $others $other }}{{- end }}{{- end }}
+{{- $expressions := include "k8sosquery.nodeGroupExpressions" (dict "groups" $others "operator" "NotIn") | fromYamlArray }}
+{{- /* A list value can't be a nodeSelector, so it is matched with node affinity In instead. */}}
+{{- $selectorIsList := false }}
+{{- range $group.nodeSelector }}{{- $selectorIsList = kindIs "slice" . }}{{- end }}
+{{- if $selectorIsList }}
+{{- $expressions = concat (include "k8sosquery.nodeGroupExpressions" (dict "groups" (list $group) "operator" "In") | fromYamlArray) $expressions }}
+{{- end }}
 # Create Uptycs Osquery daemonset for node group {{ $group.name }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -66,18 +105,13 @@ spec:
         effect: NoSchedule
       {{- end }}
       {{- end }}
-      {{- if $.Values.daemonset.affinity }}
-      affinity:
-      {{- toYaml $.Values.daemonset.affinity | nindent 8 }}
-      {{- else if gt (len $others) 0 }}
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            {{- include "k8sosquery.excludeOtherGroupsAffinity" $others | nindent 12 }}
+      {{- with include "k8sosquery.affinity" (dict "affinity" $.Values.daemonset.affinity "expressions" $expressions "onePodPerNode" true) }}
+      {{- . | trim | nindent 6 }}
       {{- end }}
+      {{- if and $group.nodeSelector (not $selectorIsList) }}
       nodeSelector:
         {{- toYaml $group.nodeSelector | nindent 8 }}
+      {{- end }}
       hostPID: true
       hostIPC: true
       hostNetwork: true

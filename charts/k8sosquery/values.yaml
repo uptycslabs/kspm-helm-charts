@@ -105,7 +105,8 @@ daemonset:
   #   value: arm64
   #   effect: NoSchedule
   # Affinity rules for K8sosquery pods can be defined here in this section.
-  # When set, the affinity block is attached to the DaemonSet pod template.
+  # When set, the affinity block is attached to the DaemonSet pod template, and to every node
+  # group DaemonSet (see nodeGroups below).
   # For more info please refer to K8s docs: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
   # Example nodeAffinity for scheduling K8sosquery pods on linux nodes:
@@ -132,14 +133,27 @@ daemonset:
   # group's nodeSelector must select a mutually-exclusive, non-overlapping set of nodes --
   # typically a single label such as node.kubernetes.io/instance-type. The chart auto-generates
   # all of this node anti-affinity (both the default DaemonSet's exclusion of every group, and
-  # each group's exclusion of every other group), but this only holds if every group's
-  # nodeSelector has exactly one key/value pair; groups with zero or more than one nodeSelector
-  # key will fail chart rendering. Each group also gets its own ConfigMap (named
-  # <configmap.name>-<group name>): configmap.tags/local_proxy below can be overridden per
-  # group, falling back to configmap.data.tags/local_proxy above when unset. The large shared
-  # osquery.flags block is always the same for every group and cannot be overridden per group.
+  # each group's exclusion of every other group), adding it to daemonset.affinity when that is
+  # also set, but this only holds if every group's nodeSelector has exactly one key; groups with
+  # more than one key will fail chart rendering. That key's value may be a single value or a list
+  # of values, so one group can cover several kinds of node. Each group also gets its own
+  # ConfigMap (named <configmap.name>-<group name>): configmap.tags/local_proxy below can be
+  # overridden per group, falling back to configmap.data.tags/local_proxy above when unset. The
+  # large shared osquery.flags block is always the same for every group and cannot be overridden
+  # per group.
+  #
+  # disableDefault: true stops rendering the default DaemonSet, so the only DaemonSets are the
+  # groups below. One group may then omit nodeSelector to cover every node no other group
+  # selects; without such a group, those nodes get no K8sosquery pod.
+  #
+  # With node groups, every K8sosquery pod also gets a required podAntiAffinity against other
+  # K8sosquery pods on its node: when a node moves between DaemonSets (e.g. enabling
+  # disableDefault, or renaming a group) the new pod waits for the old one to terminate instead
+  # of running alongside it. This requires updateStrategy.rollingUpdate.maxSurge to be 0 (the
+  # Kubernetes default).
   nodeGroups:
     enabled: false
+    disableDefault: false
     groups: []
     # groups:
     # - name: medium
@@ -180,6 +194,17 @@ daemonset:
     #     limits:
     #       cpu: 4000m
     #       memory: 4000Mi
+    #
+    # With disableDefault: true, a catch-all group and a group selecting several values:
+    # groups:
+    # - name: default
+    #   # No nodeSelector: every node not selected by another group.
+    # - name: large
+    #   nodeSelector:
+    #     node-type: [large, xlarge]
+    #   resources:
+    #     limits:
+    #       memory: 1000Mi
 
 # Configmap contains osquery flags & tags which define K8sosquery's configuration in the cluster.
 # NOTE: Please consult the Uptycs customer support before changing these configuration parameters.

@@ -185,15 +185,20 @@ affinity:
 {{- end }}
 
 {{/*
-Render the K8sosquery ConfigMap's `data:` block (osquery.tags, osquery.local_proxy, and the
-large shared osquery.flags list). Shared by templates/configmap.yaml's default ConfigMap and its
-per-node-group ConfigMaps so the osquery.flags block only exists in one place.
-Takes a dict: "global" (the root template context, i.e. `.` or `$`), "tags" and "local_proxy"
-(the osquery.tags / osquery.local_proxy values to render for this ConfigMap -- the shared
-defaults for the default ConfigMap, or a per-group override, falling back to the defaults, for a
-node group's ConfigMap).
+Render the K8sosquery ConfigMap's `data:` block (osquery.tags, osquery.local_proxy,
+osquery.local_flags, and the large shared osquery.flags list). Shared by
+templates/configmap.yaml's default ConfigMap and its per-node-group ConfigMaps so the
+osquery.flags block only exists in one place.
+Takes a dict: "global" (the root template context, i.e. `.` or `$`), "tags", "local_proxy" and
+"local_flags" (the osquery.tags / osquery.local_proxy / local_flags values to render for this
+ConfigMap -- the shared defaults for the default ConfigMap, or a per-group override, falling back
+to the defaults, for a node group's ConfigMap).
 */}}
 {{- define "k8sosquery.configmapData" -}}
+{{- $localFlags := .local_flags | default dict }}
+{{- if and .local_proxy (not (hasKey $localFlags "proxy_hostname")) }}
+{{- $localFlags = merge (dict "proxy_hostname" .local_proxy) $localFlags }}
+{{- end }}
 data:
 {{- if .tags }}
   osquery.tags: |
@@ -202,6 +207,10 @@ data:
 {{- if .local_proxy }}
   osquery.local_proxy: |
 {{ .local_proxy | trim | indent 4 }}
+{{- end }}
+  osquery.local_flags: |
+{{- range $k := keys $localFlags | sortAlpha }}
+    {{ $k }}={{ get $localFlags $k }}
 {{- end }}
   osquery.flags: |
     --add_container_image_to_events=false

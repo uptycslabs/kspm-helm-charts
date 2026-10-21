@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
   {{- include "k8sosquery.commonAnnotations" . }}
-{{ include "k8sosquery.configmapData" (dict "global" . "tags" .Values.configmap.data.tags "local_proxy" .Values.configmap.data.local_proxy) }}
+{{ include "k8sosquery.configmapData" (dict "global" . "tags" .Values.configmap.data.tags "local_proxy" .Values.configmap.data.local_proxy "local_flags" .Values.configmap.data.local_flags) }}
 {{- if and .Values.daemonset.nodeGroups.enabled (gt (len .Values.daemonset.nodeGroups.groups) 0) }}
 {{- range .Values.daemonset.nodeGroups.groups }}
 {{- $groupConfigmap := .configmap | default dict }}
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/component: endpoint
     app.kubernetes.io/part-of: Uptycs
   {{- include "k8sosquery.commonAnnotations" $ }}
-{{ include "k8sosquery.configmapData" (dict "global" $ "tags" ($groupConfigmap.tags | default $.Values.configmap.data.tags) "local_proxy" ($groupConfigmap.local_proxy | default $.Values.configmap.data.local_proxy)) }}
+{{ include "k8sosquery.configmapData" (dict "global" $ "tags" ($groupConfigmap.tags | default $.Values.configmap.data.tags) "local_proxy" ($groupConfigmap.local_proxy | default $.Values.configmap.data.local_proxy) "local_flags" ($groupConfigmap.local_flags | default $.Values.configmap.data.local_flags)) }}
 {{- end }}
 {{- end }}
 {{- end }}

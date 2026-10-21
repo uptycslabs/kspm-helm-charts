@@ -147,8 +147,8 @@ daemonset:
   # also set, but this only holds if every group's nodeSelector has exactly one key; groups with
   # more than one key will fail chart rendering. That key's value may be a single value or a list
   # of values, so one group can cover several kinds of node. Each group also gets its own
-  # ConfigMap (named <configmap.name>-<group name>): configmap.tags/local_proxy below can be
-  # overridden per group, falling back to configmap.data.tags/local_proxy above when unset. The
+  # ConfigMap (named <configmap.name>-<group name>): configmap.tags/local_proxy/local_flags below can be
+  # overridden per group, falling back to configmap.data.tags/local_proxy/local_flags above when unset. The
   # large shared osquery.flags block is always the same for every group and cannot be overridden
   # per group.
   #
@@ -175,14 +175,15 @@ daemonset:
     #     limits:
     #       cpu: 500m
     #       memory: 500Mi
-    #   # Optional: only set this if this group needs different osquery.tags/local_proxy than
+    #   # Optional: only set this if this group needs different osquery.tags/local_proxy/local_flags than
     #   # the default below. Setting it creates a dedicated ConfigMap for this group (unset
-    #   # fields still fall back to configmap.data.tags/local_proxy below); leaving it out
+    #   # fields still fall back to configmap.data.tags/local_proxy/local_flags below); leaving it out
     #   # entirely means this group's DaemonSet just mounts the shared default ConfigMap, with
     #   # no extra ConfigMap created for it.
     #   configmap:
     #     tags: team/medium-nodes
     #     local_proxy:
+    #     local_flags: {}
     # - name: large
     #   nodeSelector:
     #     node-type: large
@@ -227,6 +228,13 @@ configmap:
     # In order to use a proxy running in the same cluster by service name please specify the complete service name below like this:
     # local_proxy: <proxy_name>.<proxy_namespace>.svc.cluster.local
     local_proxy:
+    # local_flags are arbitrary osquery flags written as key=value lines into a dedicated
+    # osquery.local_flags ConfigMap entry, e.g.:
+    # local_flags:
+    #   some_flag: some_value
+    # If local_proxy above is set, it is also injected into this file as proxy_hostname=<local_proxy>
+    # (unless local_flags already sets its own proxy_hostname) for backwards compatibility.
+    local_flags: {}
 
 # Uptycs enroll secret & nginx certs are stack specific & are required to communitcate with Uptycs cloud service.
 # Enroll secret contains customer identifiers & should match with allowed Uptycs infra config.

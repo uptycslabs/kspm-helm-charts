@@ -68,6 +68,23 @@ daemonset:
       mountPath: /etc/osquery/flags
     - name: secret
       mountPath: /etc/osquery/secrets
+  # Sidecar that runs the protect-insp binary from the same k8sosquery image, alongside the
+  # uptycs-osquery container. Rendered only for Uptycs Protect installations (image tag contains
+  # "Uptycs-Protect") and not on GKE Autopilot. Gets the same host-level access as uptycs-osquery.
+  protectInspector:
+    enabled: true
+    name: osquery-protect-inspector
+    # Absolute path of the protect-insp binary inside the k8sosquery image.
+    command: ["/opt/uptycs/protect-insp/protect-insp"]
+    args: []
+    # Starting point, to be tuned after testing.
+    resources:
+      limits:
+        cpu: 10m
+        memory: 10Mi
+      requests:
+        cpu: 5m
+        memory: 5Mi
   volumes:
   - name: host
     hostPath:

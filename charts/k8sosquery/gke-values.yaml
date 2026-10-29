@@ -75,7 +75,7 @@ daemonset:
     enabled: true
     name: osquery-protect-inspector
     # Absolute path of the protect-insp binary inside the k8sosquery image.
-    command: ["/opt/uptycs/protect-insp/protect-insp"]
+    command: ["/usr/bin/protect-insp"]
     args: []
     # Starting point, to be tuned after testing.
     resources:

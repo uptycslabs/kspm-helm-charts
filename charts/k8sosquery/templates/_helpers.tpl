@@ -466,8 +466,10 @@ containers:
   {{- include "k8sosquery.env" .global | trim | nindent 2 }}
   resources:
   {{- toYaml $pi.resources | nindent 4 }}
+  {{- with $pi.volumeMounts }}
   volumeMounts:
-  {{- include "k8sosquery.volumeMounts" .global | trim | nindent 2 }}
+  {{- include "k8sosquery.mountList" . | trim | nindent 2 }}
+  {{- end }}
   {{- end }}
 {{- end }}
 
@@ -517,10 +519,11 @@ Env list shared by the osquery container and the sidecar. Takes the root context
 {{- end }}
 
 {{/*
-volumeMounts list shared by the osquery container and the sidecar. Takes the root context.
+Renders a list of volumeMounts entries (name, and optionally mountPath, readOnly and
+mountPropagation). Takes the list of mounts.
 */}}
-{{- define "k8sosquery.volumeMounts" -}}
-{{- range $k, $v := .Values.daemonset.containers.volumeMounts }}
+{{- define "k8sosquery.mountList" -}}
+{{- range $k, $v := . }}
 - name: {{ $v.name }}
 {{- if hasKey $v "mountPath" }}
   mountPath: {{ $v.mountPath }}
@@ -532,6 +535,15 @@ volumeMounts list shared by the osquery container and the sidecar. Takes the roo
   mountPropagation: {{ $v.mountPropagation }}
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{/*
+volumeMounts of the uptycs-osquery container: daemonset.containers.volumeMounts plus the nginx
+cert mount. The sidecar does not use this; it renders only daemonset.protectInspector.volumeMounts.
+Takes the root context.
+*/}}
+{{- define "k8sosquery.volumeMounts" -}}
+{{- include "k8sosquery.mountList" .Values.daemonset.containers.volumeMounts }}
 {{- $isVersionGreaterOrEqual := include "k8sosquery.version" . }}
 # Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that
 {{- if eq $isVersionGreaterOrEqual "true" }}

@@ -68,23 +68,6 @@ daemonset:
       mountPath: /etc/osquery/flags
     - name: secret
       mountPath: /etc/osquery/secrets
-  # Sidecar that runs the protect-insp binary from the same k8sosquery image, alongside the
-  # uptycs-osquery container. Rendered only for Uptycs Protect installations (image tag contains
-  # "Uptycs-Protect") and not on GKE Autopilot. Gets the same host-level access as uptycs-osquery.
-  protectInspector:
-    enabled: true
-    name: osquery-protect-inspector
-    # Absolute path of the protect-insp binary inside the k8sosquery image.
-    command: ["/usr/bin/protect-insp"]
-    args: []
-    # Starting point, to be tuned after testing.
-    resources:
-      limits:
-        cpu: 10m
-        memory: 10Mi
-      requests:
-        cpu: 5m
-        memory: 5Mi
   volumes:
   - name: host
     hostPath:
@@ -102,6 +85,29 @@ daemonset:
     secret:
       secretName: nginx-secret
       optional: false
+  # Sidecar that runs the protect-insp binary from the same k8sosquery image, alongside the
+  # uptycs-osquery container. Rendered only for Uptycs Protect installations (image tag contains
+  # "Uptycs-Protect") and not on GKE Autopilot. Gets the same host-level access as uptycs-osquery.
+  protectInspector:
+    enabled: true
+    name: osquery-protect-inspector
+    # Absolute path of the protect-insp binary inside the k8sosquery image.
+    command: ["/usr/bin/protect-insp"]
+    args: []
+    # Starting point, to be tuned after testing.
+    resources:
+      limits:
+        cpu: 10m
+        memory: 10Mi
+      requests:
+        cpu: 5m
+        memory: 5Mi
+    # volumeMounts rendered for the sidecar only (it does not inherit the uptycs-osquery mounts).
+    # Every name must exist under daemonset.volumes.
+    volumeMounts:
+    - name: host
+      mountPath: /host
+      readOnly: true
   # Deployment (update) strategy for the K8sosquery DaemonSet.
   # When set, the updateStrategy block is attached to the DaemonSet spec, controlling how pods
   # are replaced when the DaemonSet template changes (e.g. on an image upgrade).

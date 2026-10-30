@@ -59,6 +59,20 @@ daemonset:
       mountPath: /etc/osquery/flags
     - name: secret
       mountPath: /etc/osquery/secrets
+  volumes:
+  - name: host
+    hostPath:
+      path: /
+  - name: osquery
+    hostPath:
+      path: /opt/uptycs/osquery
+  - name: secret
+    secret:
+      secretName: uptycs-secret
+  - name: nginxsecret
+    secret:
+      secretName: nginx-secret
+      optional: false
   # Sidecar that runs the protect-insp binary from the same k8sosquery image, alongside the
   # uptycs-osquery container. Rendered only for Uptycs Protect installations (image tag contains
   # "Uptycs-Protect") and not on GKE Autopilot. Gets the same host-level access as uptycs-osquery.
@@ -76,20 +90,12 @@ daemonset:
       requests:
         cpu: 5m
         memory: 5Mi
-  volumes:
-  - name: host
-    hostPath:
-      path: /
-  - name: osquery
-    hostPath:
-      path: /opt/uptycs/osquery
-  - name: secret
-    secret:
-      secretName: uptycs-secret
-  - name: nginxsecret
-    secret:
-      secretName: nginx-secret
-      optional: false
+    # volumeMounts rendered for the sidecar only (it does not inherit the uptycs-osquery mounts).
+    # Every name must exist under daemonset.volumes.
+    volumeMounts:
+    - name: host
+      mountPath: /host
+      readOnly: true
   # OPTIONAL: ImagePullSecrets to add to the uptycs-osquery(K8sosquery ServiceAccount) can be specified here.
   imagePullSecrets:
   # Deployment (update) strategy for the K8sosquery DaemonSet.

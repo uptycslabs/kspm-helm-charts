@@ -477,27 +477,23 @@ containers:
 {{/*
 Returns "true" when the numeric version at the start of the image tag (up to the first "-", e.g.
 5.23.1.11 from uptycs/k8sosquery:5.23.1.11-Uptycs-Protect-2026...) is >= the given minimum.
-Compares up to four dot-separated parts; missing or non-numeric parts count as 0, so a tag with no
-parsable version (e.g. "latest") is never >= a non-zero minimum. An empty minimum always passes.
+Unlike k8sosquery.version (fixed at 5.12.2.7 for the nginx cert path) the minimum is a parameter.
+Up to four dot-separated parts are compared; missing or non-numeric parts count as 0, so a tag with
+no parsable version (e.g. "latest") is never >= a non-zero minimum. An empty minimum always passes.
 Takes a dict: "image" (full image name) and "min" (e.g. "5.23.1.11").
 */}}
 {{- define "k8sosquery.imageVersionAtLeast" -}}
 {{- $tag := last (splitList ":" (last (splitList "/" .image))) }}
-{{- $have := splitList "." (first (splitList "-" $tag)) }}
-{{- $want := splitList "." (toString .min) }}
-{{- $result := "true" }}
-{{- if .min }}
-{{- $result = "equal" }}
+{{- $have := concat (splitList "." (first (splitList "-" $tag))) (list "0" "0" "0" "0") }}
+{{- $want := concat (splitList "." (toString .min)) (list "0" "0" "0" "0") }}
+{{- /* Fold each version into one integer (5 digits per part) so a single ge compares them. */}}
+{{- $haveNum := 0 }}
+{{- $wantNum := 0 }}
 {{- range $i := until 4 }}
-{{- if eq $result "equal" }}
-{{- $h := 0 }}{{- if lt $i (len $have) }}{{ $h = atoi (index $have $i) }}{{ end }}
-{{- $w := 0 }}{{- if lt $i (len $want) }}{{ $w = atoi (index $want $i) }}{{ end }}
-{{- if gt $h $w }}{{ $result = "true" }}{{ else if lt $h $w }}{{ $result = "false" }}{{ end }}
+{{- $haveNum = add (mul $haveNum 100000) (atoi (index $have $i)) }}
+{{- $wantNum = add (mul $wantNum 100000) (atoi (index $want $i)) }}
 {{- end }}
-{{- end }}
-{{- if eq $result "equal" }}{{ $result = "true" }}{{ end }}
-{{- end }}
-{{- $result -}}
+{{- or (not .min) (ge $haveNum $wantNum) -}}
 {{- end }}
 
 {{/*

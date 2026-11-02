@@ -506,7 +506,7 @@ daemonset.protectInspector.minImageVersion ("" skips the check).
 {{- define "k8sosquery.protectInspectorEnabled" -}}
 {{- $pi := .Values.daemonset.protectInspector | default dict }}
 {{- $protect := contains "Uptycs-Protect" .Values.daemonset.containers.image_name }}
-{{- $minVersion := "5.23.1.11" }}
+{{- $minVersion := "5.23.1.22" }}
 {{- if hasKey $pi "minImageVersion" }}{{ $minVersion = toString (get $pi "minImageVersion") }}{{ end }}
 {{- $versionOk := eq (include "k8sosquery.imageVersionAtLeast" (dict "image" .Values.daemonset.containers.image_name "min" $minVersion)) "true" }}
 {{- $on := ne (toString (get $pi "enabled")) "false" }}

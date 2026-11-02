@@ -456,7 +456,8 @@ containers:
   image: {{ .global.Values.daemonset.containers.image_name }}
   imagePullPolicy: {{ .global.Values.daemonset.containers.pullPolicy }}
   command:
-  {{- toYaml $pi.command | nindent 4 }}
+  {{- /* Never fall back to the image entrypoint (osqueryd) inside the sidecar's small memory limit. */}}
+  {{- toYaml ($pi.command | default (list) | compact | default (list "/usr/bin/protect-insp")) | nindent 4 }}
   {{- with $pi.args }}
   args:
   {{- toYaml . | nindent 4 }}
@@ -473,11 +474,47 @@ containers:
   {{- end }}
 {{- end }}
 
+{{/*
+Returns "true" when the numeric version at the start of the image tag (up to the first "-", e.g.
+5.23.1.11 from uptycs/k8sosquery:5.23.1.11-Uptycs-Protect-2026...) is >= the given minimum.
+Compares up to four dot-separated parts; missing or non-numeric parts count as 0, so a tag with no
+parsable version (e.g. "latest") is never >= a non-zero minimum. An empty minimum always passes.
+Takes a dict: "image" (full image name) and "min" (e.g. "5.23.1.11").
+*/}}
+{{- define "k8sosquery.imageVersionAtLeast" -}}
+{{- $tag := last (splitList ":" (last (splitList "/" .image))) }}
+{{- $have := splitList "." (first (splitList "-" $tag)) }}
+{{- $want := splitList "." (toString .min) }}
+{{- $result := "true" }}
+{{- if .min }}
+{{- $result = "equal" }}
+{{- range $i := until 4 }}
+{{- if eq $result "equal" }}
+{{- $h := 0 }}{{- if lt $i (len $have) }}{{ $h = atoi (index $have $i) }}{{ end }}
+{{- $w := 0 }}{{- if lt $i (len $want) }}{{ $w = atoi (index $want $i) }}{{ end }}
+{{- if gt $h $w }}{{ $result = "true" }}{{ else if lt $h $w }}{{ $result = "false" }}{{ end }}
+{{- end }}
+{{- end }}
+{{- if eq $result "equal" }}{{ $result = "true" }}{{ end }}
+{{- end }}
+{{- $result -}}
+{{- end }}
+
+{{/*
+The sidecar is rendered only when all hold: the image is an Uptycs-Protect build, the image
+version is >= the minimum, default 5.23.1.11 (older images do not ship protect-insp and
+the sidecar would crash-loop), protectInspector.enabled is not false, and this is not GKE Autopilot.
+The minimum is built in here, not in values.yaml; it can be overridden with
+daemonset.protectInspector.minImageVersion ("" skips the check).
+*/}}
 {{- define "k8sosquery.protectInspectorEnabled" -}}
 {{- $pi := .Values.daemonset.protectInspector | default dict }}
 {{- $protect := contains "Uptycs-Protect" .Values.daemonset.containers.image_name }}
+{{- $minVersion := "5.23.1.11" }}
+{{- if hasKey $pi "minImageVersion" }}{{ $minVersion = toString (get $pi "minImageVersion") }}{{ end }}
+{{- $versionOk := eq (include "k8sosquery.imageVersionAtLeast" (dict "image" .Values.daemonset.containers.image_name "min" $minVersion)) "true" }}
 {{- $on := ne (toString (get $pi "enabled")) "false" }}
-{{- if and $protect $on (not .Values.isGKEAutopilot) -}}
+{{- if and $protect $versionOk $on (not .Values.isGKEAutopilot) -}}
 true
 {{- else -}}
 false

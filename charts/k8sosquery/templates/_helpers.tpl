@@ -498,7 +498,7 @@ Takes a dict: "image" (full image name) and "min" (e.g. "5.23.1.11").
 
 {{/*
 The sidecar is rendered only when all hold: the image is an Uptycs-Protect build, the image
-version is >= the minimum, default 5.23.1.11 (older images do not ship protect-insp and
+version is >= the minimum, default 5.23.1.22 (older images do not ship protect-insp and
 the sidecar would crash-loop), protectInspector.enabled is not false, and this is not GKE Autopilot.
 The minimum is built in here, not in values.yaml; it can be overridden with
 daemonset.protectInspector.minImageVersion ("" skips the check).
@@ -507,7 +507,7 @@ daemonset.protectInspector.minImageVersion ("" skips the check).
 {{- $pi := .Values.daemonset.protectInspector | default dict }}
 {{- $protect := contains "Uptycs-Protect" .Values.daemonset.containers.image_name }}
 {{- $minVersion := "5.23.1.22" }}
-{{- if hasKey $pi "minImageVersion" }}{{ $minVersion = toString (get $pi "minImageVersion") }}{{ end }}
+{{- if and (hasKey $pi "minImageVersion") (not (kindIs "invalid" (get $pi "minImageVersion"))) }}{{ $minVersion = toString (get $pi "minImageVersion") }}{{ end }}
 {{- $versionOk := eq (include "k8sosquery.imageVersionAtLeast" (dict "image" .Values.daemonset.containers.image_name "min" $minVersion)) "true" }}
 {{- $on := ne (toString (get $pi "enabled")) "false" }}
 {{- if and $protect $versionOk $on (not .Values.isGKEAutopilot) -}}

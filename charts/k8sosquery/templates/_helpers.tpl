@@ -441,50 +441,149 @@ containers:
       exec:
         command: ["/bin/sh", "-c", "mount --bind /etc/resolv.conf /host/etc/resolv.conf"]
   {{- end }}
-  {{- if eq .global.Values.isGKEAutopilot true }}
-  securityContext:
-    capabilities:
-      add:
-        - SYS_ADMIN
-        - BPF
-        - PERFMON
-        - PTRACE
-        - NET_ADMIN
-        - NET_RAW
-        - SYS_CHROOT
-        - FOWNER
-        - SYS_RESOURCE
-  {{- else }}
-  securityContext:
-    privileged: true
-  {{- end }}
+  {{- include "k8sosquery.securityContext" .global | trim | nindent 2 }}
   env:
-  {{- range $k, $v := .global.Values.daemonset.containers.env }}
-  - name: {{ $v.name }}
-    value: {{ $v.value }}
-  {{- end}}
+  {{- include "k8sosquery.env" .global | trim | nindent 2 }}
   resources:
   {{- toYaml .resources | nindent 4 }}
   volumeMounts:
-  {{- range $k, $v := .global.Values.daemonset.containers.volumeMounts }}
-  - name: {{ $v.name }}
-  {{- if hasKey $v "mountPath" }}
-    mountPath: {{ $v.mountPath }}
+  {{- include "k8sosquery.volumeMounts" .global | trim | nindent 2 }}
+  {{- if eq (include "k8sosquery.protectInspectorEnabled" .global) "true" }}
+  {{- $pi := .global.Values.daemonset.protectInspector }}
+  {{- /* Sidecar: runs protect-insp from the same k8sosquery image instead of osqueryd
+  (watcher, worker, protect). Only rendered for Uptycs Protect installations. */}}
+- name: {{ $pi.name | default "osquery-protect-inspector" }}
+  image: {{ .global.Values.daemonset.containers.image_name }}
+  imagePullPolicy: {{ .global.Values.daemonset.containers.pullPolicy }}
+  command:
+  {{- /* Never fall back to the image entrypoint (osqueryd) inside the sidecar's small memory limit. */}}
+  {{- toYaml ($pi.command | default (list) | compact | default (list "/usr/bin/protect-insp")) | nindent 4 }}
+  {{- with $pi.args }}
+  args:
+  {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- if hasKey $v "readOnly" }}
-    readOnly: {{ $v.readOnly }}
-  {{- end}}
-  {{- if hasKey $v "mountPropagation" }}
-    mountPropagation: {{ $v.mountPropagation }}
+  {{- include "k8sosquery.securityContext" .global | trim | nindent 2 }}
+  env:
+  {{- include "k8sosquery.env" .global | trim | nindent 2 }}
+  resources:
+  {{- toYaml $pi.resources | nindent 4 }}
+  {{- with $pi.volumeMounts }}
+  volumeMounts:
+  {{- include "k8sosquery.mountList" . | trim | nindent 2 }}
   {{- end }}
   {{- end }}
-  {{- $isVersionGreaterOrEqual := include "k8sosquery.version" .global }}
-  # Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that
-  {{- if eq $isVersionGreaterOrEqual "true"}}
-  - mountPath: /etc/osquery/cert
-  {{- else }}
-  - mountPath: /etc/osquery
-  {{- end }}
-    name: nginxsecret
-    readOnly: true
+{{- end }}
+
+{{/*
+Returns "true" when the numeric version at the start of the image tag (up to the first "-", e.g.
+5.23.1.11 from uptycs/k8sosquery:5.23.1.11-Uptycs-Protect-2026...) is >= the given minimum.
+Unlike k8sosquery.version (fixed at 5.12.2.7 for the nginx cert path) the minimum is a parameter.
+Up to four dot-separated parts are compared; missing or non-numeric parts count as 0, so a tag with
+no parsable version (e.g. "latest") is never >= a non-zero minimum. An empty minimum always passes.
+Takes a dict: "image" (full image name) and "min" (e.g. "5.23.1.11").
+*/}}
+{{- define "k8sosquery.imageVersionAtLeast" -}}
+{{- $tag := last (splitList ":" (last (splitList "/" .image))) }}
+{{- $have := concat (splitList "." (first (splitList "-" $tag))) (list "0" "0" "0" "0") }}
+{{- $want := concat (splitList "." (toString .min)) (list "0" "0" "0" "0") }}
+{{- /* Fold each version into one integer (5 digits per part) so a single ge compares them. */}}
+{{- $haveNum := 0 }}
+{{- $wantNum := 0 }}
+{{- range $i := until 4 }}
+{{- $haveNum = add (mul $haveNum 100000) (atoi (index $have $i)) }}
+{{- $wantNum = add (mul $wantNum 100000) (atoi (index $want $i)) }}
+{{- end }}
+{{- or (not .min) (ge $haveNum $wantNum) -}}
+{{- end }}
+
+{{/*
+The sidecar is rendered only when all hold: the image is an Uptycs-Protect build, the image
+version is >= the minimum, default 5.23.1.23 (older images do not ship protect-insp and
+the sidecar would crash-loop), protectInspector.enabled is not false, and this is not GKE Autopilot.
+The minimum is built in here, not in values.yaml; it can be overridden with
+daemonset.protectInspector.minImageVersion ("" skips the check).
+*/}}
+{{- define "k8sosquery.protectInspectorEnabled" -}}
+{{- $pi := .Values.daemonset.protectInspector | default dict }}
+{{- $protect := contains "Uptycs-Protect" .Values.daemonset.containers.image_name }}
+{{- $minVersion := "5.23.1.23" }}
+{{- if and (hasKey $pi "minImageVersion") (not (kindIs "invalid" (get $pi "minImageVersion"))) }}{{ $minVersion = toString (get $pi "minImageVersion") }}{{ end }}
+{{- $versionOk := eq (include "k8sosquery.imageVersionAtLeast" (dict "image" .Values.daemonset.containers.image_name "min" $minVersion)) "true" }}
+{{- $on := eq (toString (get $pi "enabled")) "true" }}
+{{- if and $protect $versionOk $on (not .Values.isGKEAutopilot) -}}
+true
+{{- else -}}
+false
+{{- end }}
+{{- end }}
+
+{{/*
+Security context shared by the osquery container and the osquery-protect-inspector sidecar,
+so both always get the same host-level access. Takes the root context.
+*/}}
+{{- define "k8sosquery.securityContext" -}}
+{{- if eq .Values.isGKEAutopilot true }}
+securityContext:
+  capabilities:
+    add:
+      - SYS_ADMIN
+      - BPF
+      - PERFMON
+      - PTRACE
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_CHROOT
+      - FOWNER
+      - SYS_RESOURCE
+{{- else }}
+securityContext:
+  privileged: true
+{{- end }}
+{{- end }}
+
+{{/*
+Env list shared by the osquery container and the sidecar. Takes the root context.
+*/}}
+{{- define "k8sosquery.env" -}}
+{{- range $k, $v := .Values.daemonset.containers.env }}
+- name: {{ $v.name }}
+  value: {{ $v.value }}
+{{- end }}
+{{- end }}
+
+{{/*
+Renders a list of volumeMounts entries (name, and optionally mountPath, readOnly and
+mountPropagation). Takes the list of mounts.
+*/}}
+{{- define "k8sosquery.mountList" -}}
+{{- range $k, $v := . }}
+- name: {{ $v.name }}
+{{- if hasKey $v "mountPath" }}
+  mountPath: {{ $v.mountPath }}
+{{- end }}
+{{- if hasKey $v "readOnly" }}
+  readOnly: {{ $v.readOnly }}
+{{- end }}
+{{- if hasKey $v "mountPropagation" }}
+  mountPropagation: {{ $v.mountPropagation }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+volumeMounts of the uptycs-osquery container: daemonset.containers.volumeMounts plus the nginx
+cert mount. The sidecar does not use this; it renders only daemonset.protectInspector.volumeMounts.
+Takes the root context.
+*/}}
+{{- define "k8sosquery.volumeMounts" -}}
+{{- include "k8sosquery.mountList" .Values.daemonset.containers.volumeMounts }}
+{{- $isVersionGreaterOrEqual := include "k8sosquery.version" . }}
+# Beginning K8sosquery version 5.12.2.7 the nginx cert path has been updated so the below statement checks for that
+{{- if eq $isVersionGreaterOrEqual "true" }}
+- mountPath: /etc/osquery/cert
+{{- else }}
+- mountPath: /etc/osquery
+{{- end }}
+  name: nginxsecret
+  readOnly: true
 {{- end }}

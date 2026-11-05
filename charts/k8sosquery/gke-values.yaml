@@ -89,7 +89,7 @@ daemonset:
   # uptycs-osquery container. Rendered only for Uptycs Protect installations (image tag contains
   # "Uptycs-Protect") and not on GKE Autopilot. Gets the same host-level access as uptycs-osquery.
   protectInspector:
-    enabled: true
+    enabled: false
     name: osquery-protect-inspector
     # Absolute path of the protect-insp binary inside the k8sosquery image.
     command: ["/usr/bin/protect-insp"]

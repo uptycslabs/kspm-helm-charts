@@ -465,6 +465,10 @@ containers:
   {{- include "k8sosquery.securityContext" .global | trim | nindent 2 }}
   env:
   {{- include "k8sosquery.env" .global | trim | nindent 2 }}
+  - name: POD_UID
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.uid
   resources:
   {{- toYaml $pi.resources | nindent 4 }}
   {{- with $pi.volumeMounts }}
